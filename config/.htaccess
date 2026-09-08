@@ -1,0 +1,3 @@
+# Folder ini memuat kredensial database dan kunci aplikasi.
+# Tidak boleh dapat diakses lewat peramban dalam keadaan apa pun.
+Require all denied

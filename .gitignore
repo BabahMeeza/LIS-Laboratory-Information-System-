@@ -1,0 +1,29 @@
+# Konfigurasi berisi kredensial — jangan pernah masuk version control
+config/config.php
+khanza-connector/config.php
+middleware/.env
+
+# Data runtime
+storage/logs/*
+storage/tmp/*
+storage/reports/*
+!storage/logs/.gitkeep
+!storage/tmp/.gitkeep
+!storage/reports/.gitkeep
+
+# Middleware
+middleware/node_modules/
+middleware/logs/
+middleware/spool/
+khanza-connector/connector.log
+
+# Berkas sistem
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Editor
+.idea/
+.vscode/
+*.sublime-*

@@ -1,0 +1,26 @@
+{
+  "name": "lis-instrument-gateway",
+  "version": "1.0.0",
+  "description": "Middleware penghubung alat laboratorium (ASTM E1381/E1394, HL7 v2 MLLP, Serial RS232) dengan LIS",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node --test \"test/*.test.js\"",
+    "simulate:astm": "node simulator/astmAnalyzer.js",
+    "simulate:hl7": "node simulator/hl7Analyzer.js",
+    "simulate:astm-query": "node simulator/astmAnalyzer.js --query",
+    "verify:worklist": "node simulator/rekamWorklist.js",
+    "temukan:alat": "node simulator/temukanAlat.js",
+    "simulate:bc5000": "node simulator/bc5000Palsu.js"
+  },
+  "dependencies": {},
+  "optionalDependencies": {
+    "serialport": "^12.0.0"
+  },
+  "license": "MIT"
+}

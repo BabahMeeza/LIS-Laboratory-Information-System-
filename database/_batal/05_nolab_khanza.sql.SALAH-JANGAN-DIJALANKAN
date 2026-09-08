@@ -1,0 +1,88 @@
+-- ---------------------------------------------------------------------
+-- 05_nolab_khanza.sql
+--
+-- Nomor laboratorium untuk order yang datang dari SIMRS Khanza mengikuti
+-- nomor order Khanza (permintaan_lab.noorder), bukan nomor urut yang
+-- dibuat LIS sendiri.
+--
+-- MENGAPA
+--   Selama LIS memakai nomornya sendiri, satu permintaan punya dua
+--   identitas: petugas membaca PK202609040001 di layar Khanza dan
+--   2609040001 di layar LIS. Ketika ada sengketa hasil, penelusurannya
+--   harus lewat tabel perantara. Vendor LIS lain pada Khanza memakai
+--   kaidah yang sama.
+--
+-- AMAN
+--   orders.no_lab VARCHAR(20), sama lebarnya dengan permintaan_lab.noorder.
+--   uq_orders_khanza sudah menjamin satu noorder hanya sekali masuk, jadi
+--   tidak ada tabrakan baru. Order manual tidak tersentuh: ia tetap memakai
+--   OrderService::nomorLab() karena memang tidak punya nomor Khanza.
+--
+-- Berkas ini aditif dan dapat dijalankan berulang.
+--
+--   mysql -u root -p lis < database/05_nolab_khanza.sql
+-- ---------------------------------------------------------------------
+
+-- 1. Saklar pengaturan -------------------------------------------------
+--    LIS sudah berperilaku begini secara bawaan walau baris ini tidak ada
+--    (Config::settingBool memulangkan default true). Baris ini hanya
+--    memunculkannya di menu Pengaturan supaya dapat dimatikan bila perlu.
+
+INSERT INTO `settings` (`key`, `value`, `grup`, `keterangan`) VALUES
+ ('khanza.no_lab_dari_noorder', '1', 'khanza',
+  'Nomor lab memakai nomor order Khanza. Matikan bila LIS harus memakai nomor urutnya sendiri.')
+ON DUPLICATE KEY UPDATE `keterangan` = VALUES(`keterangan`);
+
+
+-- 2. Selaraskan order Khanza yang sudah terlanjur bernomor LIS ---------
+--    Sengaja dibatasi pada order yang belum diverifikasi atau dirilis.
+--    Nomor laboratorium pada hasil yang sudah dicetak atau dikirim balik
+--    ke Khanza tidak boleh berubah di belakang layar — pembacanya sudah
+--    memegang kertas dengan nomor lama.
+--
+--    Lihat dulu apa yang akan berubah:
+
+SELECT
+    o.id,
+    o.no_order,
+    o.no_lab          AS no_lab_sekarang,
+    o.khanza_noorder  AS no_lab_menjadi,
+    o.status,
+    o.tgl_order
+FROM `orders` o
+WHERE o.sumber = 'khanza'
+  AND o.khanza_noorder IS NOT NULL
+  AND o.khanza_noorder <> ''
+  AND (o.no_lab IS NULL OR o.no_lab <> LEFT(o.khanza_noorder, 20))
+  AND o.status IN ('draft', 'ordered', 'collected', 'received', 'in_progress')
+ORDER BY o.id;
+
+--    Lalu terapkan:
+
+UPDATE `orders` o
+   SET o.no_lab = LEFT(o.khanza_noorder, 20)
+ WHERE o.sumber = 'khanza'
+   AND o.khanza_noorder IS NOT NULL
+   AND o.khanza_noorder <> ''
+   AND (o.no_lab IS NULL OR o.no_lab <> LEFT(o.khanza_noorder, 20))
+   AND o.status IN ('draft', 'ordered', 'collected', 'received', 'in_progress');
+
+
+-- 3. Sisa yang sengaja dibiarkan ---------------------------------------
+--    Order Khanza yang sudah verified/released/cancelled tetap memakai
+--    nomor lamanya. Bila memang harus ikut diselaraskan, jalankan sendiri
+--    setelah memastikan tidak ada hasil tercetak yang beredar:
+--
+--    UPDATE `orders` SET `no_lab` = LEFT(`khanza_noorder`, 20)
+--     WHERE `sumber` = 'khanza' AND `khanza_noorder` <> ''
+--       AND `status` IN ('resulted','verified','released');
+
+SELECT
+    o.status,
+    COUNT(*) AS jumlah_belum_selaras
+FROM `orders` o
+WHERE o.sumber = 'khanza'
+  AND o.khanza_noorder IS NOT NULL
+  AND o.khanza_noorder <> ''
+  AND (o.no_lab IS NULL OR o.no_lab <> LEFT(o.khanza_noorder, 20))
+GROUP BY o.status;

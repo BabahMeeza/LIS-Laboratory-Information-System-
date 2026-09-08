@@ -1,0 +1,41 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * IDENTITAS APLIKASI — BERTANDA TANGAN.
+ *
+ * Jangan menyunting berkas ini dengan tangan. Nilai tanda_tangan di
+ * bawah dihitung dari seluruh isi data dan berkas; satu huruf yang
+ * berubah membuatnya tidak cocok, aplikasi terkunci, dan seluruh
+ * kredensial API berhenti melayani.
+ *
+ * Tanda tangan RSA-SHA256. Hanya pemegang kunci privat yang dapat
+ * membuatnya; kunci itu tidak tersimpan di server ini.
+ *
+ * Diterbitkan: 2026-09-07 12:14:36 WIB
+ */
+
+return [
+    'data' => [
+        'aplikasi'      => 'LIS RSUD Hanau',
+        'versi'         => '1.0.0',
+        'instansi'      => 'RSUD Hanau',
+        'unit'          => 'Instalasi Laboratorium',
+        'pengembang'    => 'Rendra',
+        'kontak'        => '',
+        'lisensi'       => 'Lisensi tunggal untuk instansi tersebut di atas',
+        'no_lisensi'    => 'LIS-HANAU-001',
+        'diterbitkan'   => '2026-09-07',
+        'berlaku'       => 'Tanpa batas waktu',
+        'donasi_bank'   => 'Bank Mandiri',
+        'donasi_rekening' => '1590014271265',
+        'donasi_atas_nama' => 'Rendra Yusrimaelani',
+        'donasi_qris'   => '',
+        'donasi_catatan' => 'Terima kasih atas dukungannya.',
+    ],
+    'berkas' => [
+        'app/Views/about.php'            => '817124608311a150d8b2e493aee57c007c731e776924a958df53b7f982e99b7c',
+        'app/Core/Lisensi.php'           => '4ff23386277fb483fbf3cc56304522b6583deed954f8f78254e8b3522c7c70a2',
+    ],
+    'tanda_tangan' => 'aiWO3o2k8TOsrCcPvQnW8Nh2HvL3p1F5y+/PKh2mRBpYD+qUvBbHwzDUzHfNc7W/k8eWy2sAHWcLKqx28Wkdt5A+K0g9f+AAOS+Vr/ciyl8bvgWVvYsFVg3Mc+iAjJKP96oTpCt6fQ2W+R7X3tVWSfmfd3Yt1o9YN407OC/WlikOky3vB9a6/mAxtRHZJ7w8N3wtg2V2TGf8wr/C/khhiQP06YXLf3W+QBryzUTBBBgLia4pCNB+6Px0eineZq+1Ljk3HRAe1pD3W/j9Kvk15Gk6CDKKv6l38jzCMYNXMzKHQaFNaaprGIxkjVr6hHe62OizbKOtfMd/BLp15KDovP8jTqJYIwkX9vJewEr6G8ZoqVwUc28xHJHheDwv306O0UTi/dRx/hBJRTRiAaJSKsTEJIZ8TbIIeXhoYX/olpK/cQ4n/J5PNgrv9R2/J9kk9XBInKt4urowQZkR9igJdq9WQ1zMY6cY2CASscubVbGjRgX3ncM1OjbvcErlCB/l',
+];

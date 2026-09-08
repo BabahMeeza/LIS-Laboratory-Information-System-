@@ -1,0 +1,32 @@
+# =====================================================================
+#  Konektor SIMRS Khanza — pengamanan folder
+#
+#  Folder ini dipasang di web server Khanza dan memuat kredensial
+#  database. Hanya berkas di dalam api/ yang boleh diakses lewat web.
+# =====================================================================
+
+Options -Indexes
+
+# config.php memuat kata sandi database — tidak boleh dapat dibaca.
+<Files "config.php">
+    Require all denied
+</Files>
+<Files "config.example.php">
+    Require all denied
+</Files>
+
+# push_orders.php hanya untuk baris perintah (skrip juga menolak sendiri
+# bila dipanggil lewat web, ini lapis kedua).
+<Files "push_orders.php">
+    Require all denied
+</Files>
+
+# Log dan skrip SQL.
+<FilesMatch "\.(log|sql|md)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    Header always unset X-Powered-By
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>

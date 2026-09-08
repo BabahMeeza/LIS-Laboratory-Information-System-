@@ -1,0 +1,41 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * IDENTITAS APLIKASI — BERTANDA TANGAN.
+ *
+ * Jangan menyunting berkas ini dengan tangan. Nilai tanda_tangan di
+ * bawah dihitung dari seluruh isi data dan berkas; satu huruf yang
+ * berubah membuatnya tidak cocok, aplikasi terkunci, dan seluruh
+ * kredensial API berhenti melayani.
+ *
+ * Tanda tangan RSA-SHA256. Hanya pemegang kunci privat yang dapat
+ * membuatnya; kunci itu tidak tersimpan di server ini.
+ *
+ * Diterbitkan: 2026-09-07 12:16:41 WIB
+ */
+
+return [
+    'data' => [
+        'aplikasi'      => 'LIS RSUD Hanau',
+        'versi'         => '1.0.0',
+        'instansi'      => 'RSUD Hanau',
+        'unit'          => 'Instalasi Laboratorium',
+        'pengembang'    => 'Rendra',
+        'kontak'        => '',
+        'lisensi'       => 'Lisensi tunggal untuk instansi tersebut di atas',
+        'no_lisensi'    => 'LIS-HANAU-001',
+        'diterbitkan'   => '2026-09-07',
+        'berlaku'       => 'Tanpa batas waktu',
+        'donasi_bank'   => 'Bank Mandiri',
+        'donasi_rekening' => '1590014271265',
+        'donasi_atas_nama' => 'Rendra Yusrimaelani',
+        'donasi_qris'   => '',
+        'donasi_catatan' => 'Terima kasih atas dukungannya.',
+    ],
+    'berkas' => [
+        'app/Views/about.php'            => '9ad0517965289e292f36249b11668ac52489167e7e0d2189a48f60e227177d56',
+        'app/Core/Lisensi.php'           => 'db4ccba4f3d1bcd0e23bad4dd66946a3a8c61bdd4660096eeb83c75a5abe9c2d',
+    ],
+    'tanda_tangan' => 'TpdRI3XAIHrlexlxDW2U5fRKkUmm5Z+8fMEycF26mE3LZ2TVVlc1aD7YA/xRMfSPu+h7mXoSwW6D0XrLsp2KvhMpOiDtjusDPm7JOskuJoipYqA8JM0EaUdWpCDuOyFo7ZzcFxecxQj1zlfpxAsx+sx8g6YR3ekCK6kErq2efOPE2SCuOH/09C0zDYPKNKQbiRlxXzDtE0YnFQL5VnF5QCAIJTgcKIr2vVwW7J03Kbsng2Aq5bqV8YiN37lsYcXvK9nbmKeezZvP87nT2prt4hVgj7SFpVbxaDyZVgasKXNVIfRoh1hcLoAcaYYgy0xDJ3iRUvl9kgyd/itir3BYH745uuancE477cn1jQ6kQ7RCSvV1rv4cpCTSP5B/oJY6FSaWbOuSZaEIAGpZGf2l/WyoiLEIdydWZeElk/tdBHa6TEBG15jZ8DT29I+pF4eqHhVfSS8oiI4wulZrPSMB3yENppuwe4KwuaQ6vYTOpSJFUO7fVqY6p4HNpRAAq/Wi',
+];

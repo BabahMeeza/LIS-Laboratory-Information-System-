@@ -1,0 +1,34 @@
+# =====================================================================
+#  LIS — pengaman lapis luar.
+#
+#  Idealnya DocumentRoot (atau Alias) menunjuk langsung ke folder
+#  public/, sehingga berkas ini tidak pernah terpakai.
+#
+#  Namun pada instalasi XAMPP yang lazim, folder proyek diletakkan
+#  begitu saja di htdocs sehingga SELURUH isi proyek — termasuk
+#  config/config.php yang memuat kata sandi database — dapat diakses
+#  lewat peramban. Aturan di bawah menutup akses itu dan mengarahkan
+#  permintaan ke public/.
+# =====================================================================
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Tolak akses langsung ke folder sensitif.
+    RewriteRule ^(config|app|database|storage|middleware|khanza-connector|docs|bin)(/|$) - [F,L]
+
+    # Arahkan sisanya ke public/.
+    RewriteCond %{REQUEST_URI} !^/?public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Lapis kedua: blokir berkas sensitif walau mod_rewrite tidak aktif.
+<FilesMatch "\.(sql|log|md|json|lock|env|ini|yml|yaml)$">
+    Require all denied
+</FilesMatch>
+
+<Files "config.php">
+    Require all denied
+</Files>

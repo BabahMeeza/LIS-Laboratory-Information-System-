@@ -1,0 +1,955 @@
+<title>Uji Fungsi LIS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+:root {
+  --ground:      #F4F6F8;
+  --surface:     #FFFFFF;
+  --surface-2:   #EAEEF3;
+  --ink:         #12171E;
+  --ink-2:       #4B5666;
+  --ink-3:       #7C8899;
+  --line:        #DBE1E9;
+  --line-kuat:   #C2CBD6;
+  --accent:      #0F5563;
+  --accent-ink:  #FFFFFF;
+  --accent-lembut:#DCEBEE;
+  --ok:          #1B6E45;
+  --ok-bg:       #E2F1E8;
+  --bad:         #A32219;
+  --bad-bg:      #FBE6E4;
+  --warn:        #8A5A00;
+  --warn-bg:     #FAEFD9;
+
+  /* Kode warna tutup tabung vakum — penanda kelompok uji. */
+  --tabung-abu:   #8A93A0;
+  --tabung-ungu:  #7F6FB0;
+  --tabung-biru:  #4E86BC;
+  --tabung-merah: #B4514E;
+  --tabung-hijau: #3F7F66;
+  --tabung-kuning:#B8901F;
+
+  --r: 4px;
+  --tulis: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --judul: "Archivo", "IBM Plex Sans", system-ui, sans-serif;
+  --kode:  "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:      #0E1218;
+    --surface:     #161C24;
+    --surface-2:   #1D242D;
+    --ink:         #E7ECF2;
+    --ink-2:       #A6B2C0;
+    --ink-3:       #7A8694;
+    --line:        #2A333E;
+    --line-kuat:   #3A4652;
+    --accent:      #5FB8C8;
+    --accent-ink:  #062027;
+    --accent-lembut:#16333A;
+    --ok:          #58C48A;
+    --ok-bg:       #14301F;
+    --bad:         #F08880;
+    --bad-bg:      #3A1512;
+    --warn:        #E2B457;
+    --warn-bg:     #33260C;
+
+    --tabung-abu:   #9AA3B0;
+    --tabung-ungu:  #9B8BD0;
+    --tabung-biru:  #6FA4D8;
+    --tabung-merah: #D57772;
+    --tabung-hijau: #5AA184;
+    --tabung-kuning:#D4AC3E;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground:      #0E1218;
+  --surface:     #161C24;
+  --surface-2:   #1D242D;
+  --ink:         #E7ECF2;
+  --ink-2:       #A6B2C0;
+  --ink-3:       #7A8694;
+  --line:        #2A333E;
+  --line-kuat:   #3A4652;
+  --accent:      #5FB8C8;
+  --accent-ink:  #062027;
+  --accent-lembut:#16333A;
+  --ok:          #58C48A;
+  --ok-bg:       #14301F;
+  --bad:         #F08880;
+  --bad-bg:      #3A1512;
+  --warn:        #E2B457;
+  --warn-bg:     #33260C;
+
+  --tabung-abu:   #9AA3B0;
+  --tabung-ungu:  #9B8BD0;
+  --tabung-biru:  #6FA4D8;
+  --tabung-merah: #D57772;
+  --tabung-hijau: #5AA184;
+  --tabung-kuning:#D4AC3E;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--tulis);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.bungkus { max-width: 1020px; margin: 0 auto; padding: 0 20px 96px; }
+
+/* ---------- Kepala ---------- */
+
+.kepala {
+  padding: 40px 0 24px;
+  border-bottom: 2px solid var(--ink);
+}
+.eyebrow {
+  font-family: var(--kode);
+  font-size: 11.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 10px;
+}
+.kepala h1 {
+  font-family: var(--judul);
+  font-weight: 700;
+  font-size: clamp(30px, 5vw, 44px);
+  line-height: 1.08;
+  letter-spacing: -.02em;
+  margin: 0 0 12px;
+  text-wrap: balance;
+}
+.pengantar {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--ink-2);
+  font-size: 15.5px;
+}
+.pengantar strong { color: var(--ink); font-weight: 600; }
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  margin-top: 20px;
+  font-family: var(--kode);
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.meta b { color: var(--ink-2); font-weight: 500; }
+
+/* ---------- Papan status ---------- */
+
+.papan {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--ground);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+  margin-bottom: 8px;
+}
+.papan-isi {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px 20px;
+}
+
+.hitung { display: flex; gap: 18px; font-family: var(--kode); font-size: 12.5px; }
+.hitung span { display: flex; align-items: center; gap: 6px; color: var(--ink-2); }
+.hitung b { font-weight: 500; color: var(--ink); font-variant-numeric: tabular-nums; }
+.titik { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.titik.lulus { background: var(--ok); }
+.titik.gagal { background: var(--bad); }
+.titik.lewati { background: var(--warn); }
+.titik.belum  { background: var(--line-kuat); }
+
+.batang {
+  flex: 1 1 200px;
+  min-width: 160px;
+  height: 6px;
+  background: var(--surface-2);
+  border-radius: 99px;
+  overflow: hidden;
+  display: flex;
+}
+.batang i { display: block; height: 100%; transition: width .25s ease; }
+.batang .b-lulus  { background: var(--ok); }
+.batang .b-gagal  { background: var(--bad); }
+.batang .b-lewati { background: var(--warn); }
+
+.aksi { display: flex; gap: 8px; flex-wrap: wrap; }
+
+button {
+  font-family: var(--tulis);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  background: var(--surface);
+  border: 1px solid var(--line-kuat);
+  border-radius: var(--r);
+  padding: 6px 11px;
+  cursor: pointer;
+}
+button:hover { border-color: var(--ink-3); color: var(--ink); }
+button[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+button:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- Kelompok ---------- */
+
+.kelompok { margin-top: 42px; scroll-margin-top: 76px; }
+
+.kelompok-kepala {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 4px;
+}
+.tabung {
+  width: 5px;
+  align-self: stretch;
+  border-radius: 99px;
+  flex: none;
+  background: var(--warna);
+}
+.kelompok-kepala h2 {
+  font-family: var(--judul);
+  font-weight: 600;
+  font-size: 19px;
+  letter-spacing: -.01em;
+  margin: 0;
+  flex: 1;
+}
+.kelompok-kepala .cakupan {
+  font-family: var(--kode);
+  font-size: 11.5px;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+.kelompok > p.catatan-kelompok {
+  margin: 10px 0 16px;
+  color: var(--ink-2);
+  font-size: 14px;
+  max-width: 68ch;
+}
+
+/* ---------- Kartu uji ---------- */
+
+.daftar { display: flex; flex-direction: column; gap: 10px; }
+
+.uji {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--warna);
+  border-radius: var(--r);
+  padding: 14px 16px;
+}
+.uji[data-status="lulus"]  { border-color: var(--line); border-left-color: var(--ok); background: color-mix(in srgb, var(--ok-bg) 45%, var(--surface)); }
+.uji[data-status="gagal"]  { border-color: var(--bad); border-left-color: var(--bad); background: color-mix(in srgb, var(--bad-bg) 45%, var(--surface)); }
+.uji[data-status="lewati"] { border-left-color: var(--warn); opacity: .78; }
+
+.uji-kepala {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.kode-uji {
+  font-family: var(--kode);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-3);
+  flex: none;
+  padding-top: 2px;
+}
+.uji-kepala h3 {
+  font-family: var(--tulis);
+  font-weight: 600;
+  font-size: 15px;
+  margin: 0;
+  flex: 1 1 260px;
+  line-height: 1.35;
+}
+.lencana {
+  font-family: var(--kode);
+  font-size: 10px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 99px;
+  flex: none;
+  border: 1px solid transparent;
+}
+.lencana.kritis { color: var(--bad); background: var(--bad-bg); border-color: color-mix(in srgb, var(--bad) 35%, transparent); }
+.lencana.cli    { color: var(--ink-2); background: var(--surface-2); border-color: var(--line); }
+
+dl.rinci { margin: 12px 0 0; display: grid; grid-template-columns: 108px 1fr; gap: 6px 16px; }
+dl.rinci dt {
+  font-family: var(--kode);
+  font-size: 10.5px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding-top: 3px;
+}
+dl.rinci dd { margin: 0; color: var(--ink-2); font-size: 14px; }
+dl.rinci dd strong { color: var(--ink); font-weight: 600; }
+dl.rinci ol { margin: 0; padding-left: 18px; }
+dl.rinci ol li { margin-bottom: 3px; }
+dl.rinci ol li::marker { color: var(--ink-3); font-family: var(--kode); font-size: 12px; }
+
+code, .mono {
+  font-family: var(--kode);
+  font-size: 12.5px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: .5px 4px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+pre {
+  font-family: var(--kode);
+  font-size: 12px;
+  line-height: 1.5;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 9px 11px;
+  margin: 6px 0 0;
+  overflow-x: auto;
+  color: var(--ink);
+}
+pre code { background: none; border: 0; padding: 0; white-space: pre; }
+
+/* ---------- Kendali ---------- */
+
+.kendali {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 13px;
+  padding-top: 11px;
+  border-top: 1px dashed var(--line);
+}
+.pilihan { display: flex; gap: 5px; }
+.pilihan label {
+  font-family: var(--kode);
+  font-size: 11.5px;
+  padding: 4px 10px;
+  border: 1px solid var(--line-kuat);
+  border-radius: var(--r);
+  cursor: pointer;
+  color: var(--ink-2);
+  background: var(--surface);
+  user-select: none;
+}
+.pilihan input { position: absolute; opacity: 0; width: 0; height: 0; }
+.pilihan input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 3px; }
+.pilihan label:hover { border-color: var(--ink-3); }
+.pilihan label:has(input[value="lulus"]:checked)  { background: var(--ok);   border-color: var(--ok);   color: #fff; }
+.pilihan label:has(input[value="gagal"]:checked)  { background: var(--bad);  border-color: var(--bad);  color: #fff; }
+.pilihan label:has(input[value="lewati"]:checked) { background: var(--warn); border-color: var(--warn); color: #fff; }
+
+input.catatan {
+  flex: 1 1 200px;
+  min-width: 150px;
+  font-family: var(--tulis);
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 5px 9px;
+}
+input.catatan::placeholder { color: var(--ink-3); }
+
+/* ---------- Lain ---------- */
+
+.sembunyi { display: none !important; }
+
+.tutup {
+  margin-top: 48px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r);
+}
+.tutup h2 { font-family: var(--judul); font-size: 17px; margin: 0 0 8px; font-weight: 600; }
+.tutup p { margin: 0 0 8px; color: var(--ink-2); font-size: 14px; max-width: 68ch; }
+.tutup p:last-child { margin-bottom: 0; }
+
+.salinan {
+  font-family: var(--kode);
+  font-size: 11.5px;
+  color: var(--ink-3);
+  margin-left: auto;
+}
+
+@media (max-width: 620px) {
+  dl.rinci { grid-template-columns: 1fr; gap: 2px; }
+  dl.rinci dt { padding-top: 8px; }
+}
+
+@media print {
+  .papan, .aksi { display: none; }
+  body { background: #fff; }
+  .uji { break-inside: avoid; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+
+<div class="bungkus">
+
+<header class="kepala">
+  <p class="eyebrow">Protokol penerimaan · LIS v1.0.0</p>
+  <h1>Uji Fungsi LIS</h1>
+  <p class="pengantar">
+    Lima puluh tujuh langkah uji untuk membuktikan sistem bekerja sebelum dipakai
+    melayani pasien — dari pemasangan, alur klinis lengkap, hingga jalur gagal
+    yang justru paling menentukan keselamatan. Uji bertanda
+    <span class="lencana kritis">kritis</span> menyangkut keselamatan pasien:
+    <strong>seluruhnya harus Lulus</strong>, tanpa pengecualian.
+  </p>
+  <div class="meta">
+    <span><b>Basis uji</b> data contoh bawaan (92 pemeriksaan, 12 paket)</span>
+    <span><b>Akun</b> admin / Lis#2026</span>
+    <span><b>Penguji</b> ______________</span>
+    <span><b>Tanggal</b> ______________</span>
+  </div>
+</header>
+
+<div class="papan">
+  <div class="papan-isi">
+    <div class="hitung">
+      <span><i class="titik lulus"></i>Lulus <b id="n-lulus">0</b></span>
+      <span><i class="titik gagal"></i>Gagal <b id="n-gagal">0</b></span>
+      <span><i class="titik lewati"></i>Lewati <b id="n-lewati">0</b></span>
+      <span><i class="titik belum"></i>Belum <b id="n-belum">57</b></span>
+    </div>
+    <div class="batang" role="img" aria-label="Kemajuan pengujian">
+      <i class="b-lulus"  id="bar-lulus"  style="width:0%"></i>
+      <i class="b-gagal"  id="bar-gagal"  style="width:0%"></i>
+      <i class="b-lewati" id="bar-lewati" style="width:0%"></i>
+    </div>
+    <div class="aksi">
+      <button type="button" id="f-semua"  aria-pressed="true">Semua</button>
+      <button type="button" id="f-belum"  aria-pressed="false">Belum diuji</button>
+      <button type="button" id="f-gagal"  aria-pressed="false">Gagal</button>
+      <button type="button" id="f-kritis" aria-pressed="false">Kritis</button>
+      <button type="button" id="salin">Salin ringkasan</button>
+      <button type="button" id="reset">Kosongkan</button>
+    </div>
+  </div>
+</div>
+
+<main id="isi"></main>
+
+<section class="tutup">
+  <h2>Menilai hasilnya</h2>
+  <p>
+    <strong>Siap melayani pasien</strong> bila seluruh uji kritis Lulus dan tidak ada
+    Gagal pada kelompok A, C, D, E, dan F. Uji Khanza boleh ditunda bila integrasi
+    SIMRS belum dijadwalkan, tetapi harus dijalankan sebelum bridging dinyalakan.
+  </p>
+  <p>
+    <strong>Satu Gagal pada uji kritis menghentikan penerimaan.</strong> Uji ini
+    menjaga hal yang tidak boleh keliru: hasil yang hilang tanpa jejak, nilai kritis
+    yang lolos tanpa dilaporkan, hasil terverifikasi yang tertimpa alat, dan rujukan
+    yang salah untuk bayi atau anak. Perbaiki sebabnya, lalu ulangi seluruh kelompok
+    yang bersangkutan — bukan hanya langkah yang gagal.
+  </p>
+  <p>
+    Catatan dan status tersimpan di peramban ini saja. Gunakan <em>Salin ringkasan</em>
+    untuk memindahkannya ke berita acara.
+  </p>
+</section>
+
+</div>
+
+<script>
+const DATA = [
+  {
+    id: "A", judul: "Kesiapan pemasangan", warna: "var(--tabung-abu)",
+    catatan: "Dijalankan sekali setelah pemasangan. Bila kelompok ini belum bersih, kelompok lain tidak layak diuji karena kegagalannya akan menyesatkan.",
+    uji: [
+      { id: "A1", judul: "Uji mandiri pemasangan lulus", cli: true,
+        pra: "LIS terpasang, MySQL berjalan.",
+        langkah: ["Jalankan <code>php bin/selftest.php</code>."],
+        harap: "30 pemeriksaan dijalankan. Boleh tersisa peringatan akun contoh masih aktif; <strong>tidak boleh ada</strong> kegagalan pada bagian Lingkungan atau Database.",
+        pre: "Lingkungan\n  ✓ PHP 8.0 atau lebih baru (8.2.x)\n  ✓ Ekstensi pdo_mysql aktif\n  ✓ Ekstensi mbstring aktif" },
+      { id: "A2", judul: "Ekstensi PHP Apache sama dengan PHP CLI",
+        pra: "LIS dibuka lewat Apache/XAMPP.",
+        langkah: ["Buka LIS di peramban.", "Bandingkan php.ini yang disebut selftest dengan php.ini Apache."],
+        harap: "Halaman terbuka normal. Bila ada ekstensi kurang, LIS menampilkan pesan yang menyebut ekstensi dan berkas php.ini-nya — bukan halaman 500 kosong." },
+      { id: "A3", judul: "Rute front controller bekerja di sub-folder",
+        pra: "LIS dipasang sebagai sub-folder htdocs.",
+        langkah: ["Buka <code>/LIS/public/api/v1/ping</code> di peramban."],
+        harap: "Menghasilkan JSON <code>{\"sukses\":true,\"pesan\":\"LIS siap\"}</code>. Bila yang muncul dashboard XAMPP dengan status 200, aturan rewrite belum benar." },
+      { id: "A4", judul: "Berkas rahasia tidak dapat diakses dari peramban", kritis: true,
+        pra: "—",
+        langkah: ["Buka <code>/LIS/config/config.php</code>", "Buka <code>/LIS/storage/logs/</code>", "Buka <code>/LIS/middleware/.env</code>"],
+        harap: "Ketiganya menghasilkan <strong>403 atau 404</strong>. Bila isi berkas terbaca, kata sandi database dan kunci enkripsi bocor — hentikan pemasangan." },
+      { id: "A5", judul: "Data master terpasang lengkap",
+        pra: "—",
+        langkah: ["Buka <strong>Master Pemeriksaan</strong>.", "Buka daftar paket."],
+        harap: "92 pemeriksaan, 96 nilai rujukan, dan 12 paket termasuk <code>DL</code> Darah Lengkap dan <code>PRAOP</code> Panel Pra-Operasi." }
+    ]
+  },
+  {
+    id: "B", judul: "Pengguna, peran, dan keamanan masuk", warna: "var(--tabung-abu)",
+    catatan: "Peran menentukan siapa boleh memverifikasi hasil. Uji ini memastikan batasnya nyata, bukan sekadar menu yang disembunyikan.",
+    uji: [
+      { id: "B1", judul: "Masuk dengan akun administrator",
+        pra: "—", langkah: ["Masuk sebagai <code>admin</code> / <code>Lis#2026</code>."],
+        harap: "Masuk ke Dashboard. Seluruh menu tampil." },
+      { id: "B2", judul: "Akun terkunci setelah lima kali gagal", kritis: true,
+        pra: "—",
+        langkah: ["Masuk dengan kata sandi salah sebanyak 5 kali.", "Coba lagi dengan kata sandi yang benar."],
+        harap: "Percobaan keenam ditolak dengan pesan terkunci, <strong>walaupun kata sandinya benar</strong>. Kunci berlaku 15 menit per kombinasi pengguna+IP dan bertahan meski peramban ditutup." },
+      { id: "B3", judul: "Petugas sampling tidak dapat memverifikasi", kritis: true,
+        pra: "Ada hasil berstatus final menunggu verifikasi.",
+        langkah: ["Masuk sebagai <code>sampling</code>.", "Coba buka <code>/verifikasi</code> langsung lewat alamat."],
+        harap: "Ditolak. Peran sampling tidak memiliki izin <code>hasil.verifikasi</code>; menyembunyikan menu saja tidak cukup." },
+      { id: "B4", judul: "Analis dapat entri tetapi tidak dapat merilis",
+        pra: "—",
+        langkah: ["Masuk sebagai <code>analis</code>.", "Buka Worklist, isi satu hasil.", "Coba rilis hasil terverifikasi."],
+        harap: "Entri hasil berhasil. Tombol rilis tidak tersedia — <code>hasil.rilis</code> hanya milik verifikator dan admin." },
+      { id: "B5", judul: "Token CSRF melindungi kiriman formulir",
+        pra: "—",
+        langkah: ["Kirim POST ke <code>/order/baru</code> tanpa medan <code>_token</code> (mis. lewat curl)."],
+        harap: "Ditolak dengan pesan token keamanan tidak sah." }
+    ]
+  },
+  {
+    id: "C", judul: "Pasien, order, dan spesimen", warna: "var(--tabung-ungu)",
+    catatan: "Alur harian petugas. Barcode yang tercetak di sini adalah kunci yang dipakai analyzer untuk menautkan hasilnya — salah di sini, salah di seluruh rantai.",
+    uji: [
+      { id: "C1", judul: "Mendaftarkan pasien baru",
+        pra: "—",
+        langkah: ["<strong>Pasien → Baru</strong>.", "Isi nama, tanggal lahir, jenis kelamin.", "Simpan."],
+        harap: "Nomor rekam medis terbentuk otomatis. Pasien dapat dicari kembali lewat nama maupun nomor." },
+      { id: "C2", judul: "Membuat order multi-tabung",
+        pra: "Pasien C1 tersedia.",
+        langkah: ["<strong>Order Baru</strong>, pilih pasien C1.", "Centang paket <code>DL</code>, <code>LIPID</code>, dan <code>UL</code>.", "Simpan."],
+        harap: "Terbentuk satu order dengan nomor <code>LIS-YYMMDD-nnnn</code>, nomor lab, dan <strong>tiga spesimen berbeda</strong> (EDTA, serum, urin) — bukan satu tabung untuk semuanya." },
+      { id: "C3", judul: "Barcode Code 128 tercetak dan terbaca", kritis: true,
+        pra: "Order C2 tersimpan.",
+        langkah: ["Buka <strong>Cetak Label</strong> pada order tersebut.", "Pindai label dengan barcode scanner ke sembarang kolom teks."],
+        harap: "Angka yang terbaca scanner <strong>persis sama</strong> dengan barcode yang tertulis di label. Barcode dibangkitkan sebagai SVG Code 128 tanpa pustaka luar." },
+      { id: "C4", judul: "Penerimaan spesimen lewat pindai barcode",
+        pra: "Label C3 tercetak.",
+        langkah: ["<strong>Spesimen → Terima Barcode</strong>.", "Pindai satu label."],
+        harap: "Spesimen itu saja yang berubah menjadi diterima. Dua tabung lain pada order yang sama tetap menunggu." },
+      { id: "C5", judul: "Menolak spesimen dengan alasan",
+        pra: "Ada spesimen menunggu.",
+        langkah: ["Buka daftar spesimen, pilih <strong>Tolak</strong> pada satu baris.", "Isi alasan (mis. hemolisis), simpan."],
+        harap: "Status menjadi ditolak beserta alasannya. Pemeriksaan pada tabung itu tidak masuk worklist." },
+      { id: "C6", judul: "Peringatan bila tanggal lahir atau jenis kelamin kosong", kritis: true,
+        pra: "Buat pasien tanpa tanggal lahir.",
+        langkah: ["Buat order untuk pasien itu.", "Buka layar entri hasil."],
+        harap: "Layar entri menampilkan peringatan bahwa umur diasumsikan dewasa 30 tahun. Tanpa peringatan ini, rujukan bayi dan anak bisa dipakai keliru tanpa disadari." }
+    ]
+  },
+  {
+    id: "D", judul: "Alat laboratorium — ASTM dan HL7", warna: "var(--tabung-biru)",
+    catatan: "Dijalankan dengan simulator, tanpa perlu analyzer sungguhan. Jalankan middleware lebih dulu (<code>npm start</code>) dan pastikan alat HEMA-01 sudah dicentang aktif.",
+    uji: [
+      { id: "D1", judul: "Middleware terhubung dan membuka port alat", cli: true,
+        pra: "HEMA-01 aktif di menu Alat Laboratorium.",
+        langkah: ["Jalankan <code>npm start</code> di folder middleware."],
+        harap: "Log menyebut alat dan portnya. Bila muncul <em>Tidak ada alat aktif</em>, centang aktif belum tersimpan.",
+        pre: "[HEMA-01] Hematology Analyzer 1 — ASTM / tcp_server (dua arah)\n[HEMA-01] Menunggu koneksi analyzer di 0.0.0.0:5100" },
+      { id: "D2", judul: "Host query mengembalikan worklist", cli: true,
+        pra: "Order C2 ada, barcode tabung EDTA dicatat.",
+        langkah: ["Jalankan <code>node simulator/astmAnalyzer.js --query --sample &lt;barcode&gt;</code>."],
+        harap: "Middleware mencatat <em>Host query</em> lalu mengirim rekaman worklist. Simulator menerima daftar pemeriksaan yang diminta — bukan pesan tidak ditemukan." },
+      { id: "D2b", judul: "Bentuk worklist sah menurut ASTM E1381/E1394", kritis: true, cli: true,
+        pra: "Order hematologi menunggu hasil, barcode dicatat.",
+        langkah: ["Jalankan <code>npm run verify:worklist -- --sample &lt;barcode&gt;</code>."],
+        harap: "Seluruh pemeriksaan bertanda ✓. Kode yang terkirim harus <strong>kode alat</strong> (<code>HGB</code>, <code>HCT</code>), bukan kode LIS (<code>HB</code>, <code>HT</code>) — bila kode LIS yang muncul, pemetaan belum lengkap dan analyzer tidak akan mengenali permintaannya.",
+        pre: "✓ Checksum 4 bingkai (0 salah)\n✓ Nomor bingkai berurutan dan berputar pada 0-7\n✓ Universal test ID memuat 15 kode: BAS%, EOS%, HCT, HGB, …\n✓ Prioritas \"S\" adalah nilai E1394 yang sah\n✓ Jenis kelamin \"M\" dipetakan ke kode E1394 (M/F/U)" },
+      { id: "D2c", judul: "Query barcode tak dikenal dijawab, bukan didiamkan", kritis: true, cli: true,
+        pra: "—",
+        langkah: ["Jalankan <code>npm run verify:worklist -- --sample 9999999999</code>."],
+        harap: "Jawabannya <code>H</code> lalu <code>L|1|I</code> — kode terminasi ASTM untuk “tidak ada informasi dari query”. Analyzer memahami ini dan melanjutkan. Bila tidak ada jawaban sama sekali, alat sungguhan akan menggantung menunggu." },
+      { id: "D3", judul: "Hasil ASTM tersimpan seluruhnya", kritis: true,
+        pra: "D2 berhasil.",
+        langkah: ["Biarkan simulator melanjutkan pengiriman hasil.", "Buka <strong>Worklist</strong> pada order tersebut."],
+        harap: "Log middleware menyebut <code>15 dari 15 nilai</code> dan seluruh parameter yang diminta terisi di layar Worklist." },
+      { id: "D4", judul: "Hasil HL7 v2 lewat MLLP tersimpan", cli: true,
+        pra: "Alat KIMIA-01 diaktifkan.",
+        langkah: ["Jalankan <code>node simulator/hl7Analyzer.js --sample &lt;barcode serum&gt;</code>."],
+        harap: "Pesan ORU^R01 diterima, LIS membalas ACK, hasil kimia klinik tersimpan pada order yang benar." },
+      { id: "D5", judul: "Sample ID tak dikenal tidak menghilangkan hasil", kritis: true,
+        pra: "—",
+        langkah: ["Jalankan simulator dengan <code>--sample 9999999999</code>.", "Buka <strong>Alat → Hasil Belum Terpetakan</strong>."],
+        harap: "Muncul satu baris beralasan <code>sample_tidak_ditemukan</code> memuat <strong>seluruh 15 nilai</strong>. Log middleware memberi peringatan, bukan baris INFO yang terbaca seperti sukses." },
+      { id: "D6", judul: "Parameter belum dipetakan tersimpan sebagai menggantung", kritis: true,
+        pra: "Hapus satu pemetaan kode pada HEMA-01.",
+        langkah: ["Kirim ulang hasil lewat simulator.", "Buka Hasil Belum Terpetakan."],
+        harap: "Baris beralasan <code>parameter_belum_dipetakan</code>. Kode barunya juga tercatat otomatis di layar Pemetaan Kode untuk dilengkapi." },
+      { id: "D7", judul: "Hasil terverifikasi tidak tertimpa alat", kritis: true,
+        pra: "Ada order yang hasilnya sudah diverifikasi.",
+        langkah: ["Jalankan simulator memakai barcode order tersebut.", "Periksa nilai lama.", "Buka Hasil Belum Terpetakan."],
+        harap: "Nilai lama <strong>tidak berubah</strong>, dan nilai baru tersimpan sebagai baris beralasan <code>ditolak_hasil_sudah_diverifikasi</code>. Keduanya harus terpenuhi: menolak menimpa saja tidak cukup bila nilainya lalu hilang." },
+      { id: "D8", judul: "Memasang ulang hasil menggantung ke order yang benar",
+        pra: "Ada baris pada Hasil Belum Terpetakan.",
+        langkah: ["Buka barisnya, pilih order tujuan.", "Pasangkan."],
+        harap: "Nilai berpindah ke order tersebut, baris menggantung berubah menjadi terpasang, dan tercatat siapa yang memasangkannya." },
+      { id: "D9", judul: "Pesan mentah tersimpan dan dapat diproses ulang",
+        pra: "Ada pesan pada Log Komunikasi.",
+        langkah: ["Buka <strong>Alat → Log Komunikasi → Detail</strong>.", "Tekan <strong>Proses Ulang</strong>."],
+        harap: "Pesan ASTM mentah terlihat apa adanya beserta hasil parsingnya, dan pemrosesan ulang berjalan tanpa menggandakan hasil." }
+    ]
+  },
+  {
+    id: "E", judul: "Rujukan, flag, dan nilai kritis", warna: "var(--tabung-merah)",
+    catatan: "Inti keselamatan sistem. LIS menghitung ulang flag terhadap rujukan pasien itu sendiri dan tidak mempercayai flag bawaan alat.",
+    uji: [
+      { id: "E1", judul: "Rujukan mengikuti jenis kelamin", kritis: true,
+        pra: "Dua pasien dewasa, satu laki-laki satu perempuan.",
+        langkah: ["Masukkan Hemoglobin <code>13.0 g/dL</code> untuk keduanya."],
+        harap: "Laki-laki ditandai rendah (rujukan 13.2–17.3), perempuan normal (11.7–15.5). Nilai yang sama menghasilkan flag berbeda." },
+      { id: "E2", judul: "Rujukan mengikuti umur", kritis: true,
+        pra: "Pasien bayi (di bawah 1 tahun) dan pasien dewasa.",
+        langkah: ["Masukkan nilai yang sama pada pemeriksaan yang rujukannya berbeda menurut umur."],
+        harap: "Sistem memilih baris rujukan paling spesifik: jenis kelamin eksplisit mengalahkan “semua”, lalu rentang umur tersempit." },
+      { id: "E3", judul: "LIS menghitung ulang flag, bukan menyalin dari alat", kritis: true,
+        pra: "Alat mengirim Hb 6.4 g/dL untuk pasien laki-laki dewasa dengan flag <code>L</code>.",
+        langkah: ["Kirim hasil lewat simulator.", "Buka hasilnya."],
+        harap: "LIS menandai <code>LL</code> (kritis, ambang ≤ 7.0), bukan <code>L</code> seperti kiriman alat. Flag asli alat tetap tersimpan terpisah pada kolom <code>flag_alat</code>." },
+      { id: "E4", judul: "Nilai kritis menghalangi verifikasi", kritis: true,
+        pra: "Hasil E3 tersimpan.",
+        langkah: ["Buka <strong>Verifikasi</strong>, coba verifikasi order tersebut."],
+        harap: "Ditolak dengan alasan masih ada nilai kritis yang belum tercatat pelaporannya ke DPJP. <strong>Ini disengaja</strong> — bukan gangguan yang perlu diakali." },
+      { id: "E5", judul: "Verifikasi terbuka setelah pelaporan dicatat", kritis: true,
+        pra: "E4 terhalang.",
+        langkah: ["Buka <strong>Lapor Kritis</strong>, catat nama penerima laporan dan waktunya.", "Ulangi verifikasi."],
+        harap: "Verifikasi berhasil. Catatan pelaporan tersimpan permanen dan tampil pada riwayat hasil." },
+      { id: "E6", judul: "Delta check menandai perubahan mencolok",
+        pra: "Pasien punya hasil sebelumnya dalam 7 hari terakhir.",
+        langkah: ["Masukkan nilai baru yang berbeda lebih dari 30 persen."],
+        harap: "Hasil ditandai delta check. Ambang dan rentang harinya dapat diatur di Pengaturan Sistem." },
+      { id: "E7", judul: "Pemeriksaan tanpa rujukan tidak dipaksa diberi flag",
+        pra: "Pemeriksaan kualitatif tanpa nilai rujukan.",
+        langkah: ["Masukkan hasilnya."],
+        harap: "Tersimpan apa adanya tanpa flag. Sistem tidak mengarang penilaian yang tidak punya dasar." }
+    ]
+  },
+  {
+    id: "F", judul: "Verifikasi, rilis, dan koreksi", warna: "var(--tabung-hijau)",
+    catatan: "Jalur yang menentukan kapan sebuah nilai boleh dilihat dokter pengirim, dan bagaimana kekeliruan diperbaiki tanpa menghapus jejak.",
+    uji: [
+      { id: "F1", judul: "Verifikasi mengubah status hasil",
+        pra: "Hasil berstatus final.",
+        langkah: ["Buka Verifikasi, tinjau, verifikasi."],
+        harap: "Status menjadi terverifikasi, tercatat siapa dan kapan." },
+      { id: "F2", judul: "Rilis menerbitkan hasil",
+        pra: "F1 selesai.",
+        langkah: ["Rilis order tersebut."],
+        harap: "Status order menjadi rilis. Hasil siap dicetak dan siap dikirim ke SIMRS." },
+      { id: "F3", judul: "Cetak laporan hasil",
+        pra: "F2 selesai.",
+        langkah: ["Cetak laporan."],
+        harap: "Memuat identitas pasien, nilai, satuan, rujukan, flag, nama pemverifikasi, dan waktu. Nilai kritis terlihat jelas." },
+      { id: "F4", judul: "Koreksi setelah rilis tidak menghapus nilai lama", kritis: true,
+        pra: "F2 selesai.",
+        langkah: ["Pakai jalur <strong>Koreksi</strong>, ubah satu nilai, isi alasan.", "Buka riwayat hasil."],
+        harap: "Nilai lama, nilai baru, alasan, pelaku, dan waktunya <strong>seluruhnya tersimpan</strong>. Laporan cetak menandai hasil sebagai koreksi." },
+      { id: "F5", judul: "Batal verifikasi hanya sebelum rilis",
+        pra: "Hasil terverifikasi tetapi belum dirilis.",
+        langkah: ["Batalkan verifikasi.", "Coba hal yang sama pada order yang sudah dirilis."],
+        harap: "Yang belum dirilis dapat dibatalkan; yang sudah dirilis tidak — harus lewat jalur koreksi." },
+      { id: "F6", judul: "Jejak audit merekam tindakan tingkat sistem",
+        pra: "Beberapa uji di atas sudah dijalankan.",
+        langkah: ["Buka <strong>Pengaturan → Jejak Audit</strong>."],
+        harap: "Tercatat pembuatan order, verifikasi, rilis, koreksi, dan penerbitan kredensial API, lengkap dengan pelakunya." }
+    ]
+  },
+  {
+    id: "G", judul: "Kontrol mutu", warna: "var(--tabung-kuning)",
+    catatan: "Westgard dan Levey-Jennings. Diuji dengan memasukkan nilai QC yang sengaja menyimpang.",
+    uji: [
+      { id: "G1", judul: "Mendaftarkan lot kontrol",
+        pra: "—",
+        langkah: ["<strong>QC → Lot Baru</strong>, isi nama, level, mean, dan SD.", "Simpan."],
+        harap: "Lot tersimpan dan tersedia untuk entri harian." },
+      { id: "G2", judul: "Pelanggaran 1-3s terdeteksi", kritis: true,
+        pra: "Lot G1 tersedia.",
+        langkah: ["Masukkan nilai QC lebih dari 3 SD dari mean."],
+        harap: "Ditandai melanggar aturan <code>1-3s</code> dan diberi peringatan — bukan disimpan diam-diam." },
+      { id: "G3", judul: "Aturan 2-2s dan 10x terdeteksi",
+        pra: "Lot G1 tersedia.",
+        langkah: ["Masukkan dua nilai berturut-turut di atas 2 SD pada sisi yang sama.", "Lalu masukkan 10 nilai berturut-turut di sisi mean yang sama."],
+        harap: "Terdeteksi sebagai <code>2-2s</code> dan <code>10x</code>. Aturan yang dilanggar disebutkan namanya." },
+      { id: "G4", judul: "Grafik Levey-Jennings terbaca",
+        pra: "Ada beberapa entri QC.",
+        langkah: ["Buka grafik pada lot tersebut."],
+        harap: "Garis mean serta batas ±1SD, ±2SD, ±3SD tergambar, dan titik pelanggaran menonjol." }
+    ]
+  },
+  {
+    id: "H", judul: "Integrasi SIMRS Khanza", warna: "var(--tabung-abu)",
+    catatan: "Dijalankan hanya bila konektor sudah dipasang di server Khanza. Boleh ditunda, tetapi wajib sebelum bridging dinyalakan untuk pelayanan.",
+    uji: [
+      { id: "H1", judul: "Uji koneksi konektor",
+        pra: "Konektor terpasang, API key terisi di kedua sisi.",
+        langkah: ["<strong>Integrasi → Uji Koneksi</strong>."],
+        harap: "Konektor menjawab siap beserta jumlah order menunggu dan status ketiga tabel bridging." },
+      { id: "H2", judul: "Menarik order dari Khanza",
+        pra: "Ada permintaan lab di Khanza.",
+        langkah: ["<strong>Integrasi → Tarik Order</strong>."],
+        harap: "Order masuk ke LIS lengkap dengan nomor order Khanza. Order hanya ditandai terambil bila LIS benar-benar menerimanya." },
+      { id: "H3", judul: "Order dengan kode belum dipetakan tidak hilang", kritis: true,
+        pra: "Ada order memuat pemeriksaan yang belum dipetakan.",
+        langkah: ["Tarik order.", "Periksa log integrasi."],
+        harap: "Order ditolak dengan menyebut kode yang belum dipetakan, dan <strong>tidak</strong> ditandai terambil — sehingga terkirim ulang sendiri setelah pemetaan dilengkapi." },
+      { id: "H4", judul: "Hasil terkirim ke Khanza saat rilis",
+        pra: "Order asal Khanza sudah diverifikasi.",
+        langkah: ["Rilis order.", "Periksa <code>sik_bridging_lab.detail_hasil_lab</code> di server Khanza."],
+        harap: "Baris hasil tertulis untuk <code>noorder</code> tersebut." },
+      { id: "H5", judul: "Pengiriman ulang tidak menggandakan hasil", kritis: true,
+        pra: "H4 selesai, catat jumlah barisnya.",
+        langkah: ["Kirim ulang hasil yang sama.", "Hitung ulang barisnya."],
+        harap: "Jumlah baris <strong>tetap sama</strong>. Pengiriman menghapus hasil lama untuk <code>noorder</code> itu sebelum menulis ulang." }
+    ]
+  },
+  {
+    id: "I", judul: "Ketahanan dan pemulihan", warna: "var(--tabung-abu)",
+    catatan: "Analyzer tidak berhenti bekerja ketika LIS mati. Uji ini membuktikan hasil pasien tidak hilang pada gangguan yang pasti terjadi cepat atau lambat.",
+    uji: [
+      { id: "I1", judul: "Hasil tetap aman saat LIS mati", kritis: true,
+        pra: "Middleware berjalan.",
+        langkah: ["Hentikan Apache.", "Jalankan simulator mengirim hasil.", "Periksa isi folder <code>middleware/spool/</code>."],
+        harap: "Middleware tetap menerima dan menulis payload ke spool. Tidak ada hasil yang hilang, tidak ada proses yang mati." },
+      { id: "I2", judul: "Antrian terkirim sendiri setelah LIS hidup", kritis: true,
+        pra: "I1 selesai, ada berkas di spool.",
+        langkah: ["Jalankan kembali Apache.", "Tunggu paling lama 15 detik."],
+        harap: "Berkas spool terkirim otomatis dan hilang dari folder. Hasilnya muncul di LIS tanpa tindakan manual." },
+      { id: "I3", judul: "Analyzer terputus di tengah pengiriman",
+        pra: "Middleware berjalan.",
+        langkah: ["Jalankan simulator, putuskan di tengah sesi.", "Amati log middleware."],
+        harap: "Middleware mencatat terputus dan membersihkan sesi. Sesi berikutnya berjalan normal, tanpa perlu dijalankan ulang." },
+      { id: "I4", judul: "Payload yang ditolak permanen tidak dibuang",
+        pra: "—",
+        langkah: ["Kirim hasil memakai kode alat yang tidak terdaftar.", "Periksa <code>middleware/spool/gagal/</code>."],
+        harap: "Berkasnya dipindahkan ke folder gagal, bukan dihapus, sehingga dapat dikirim ulang setelah alat didaftarkan." }
+    ]
+  },
+  {
+    id: "J", judul: "Laporan dan ekspor", warna: "var(--tabung-hijau)",
+    catatan: "Dijalankan terakhir, setelah ada cukup data dari kelompok sebelumnya.",
+    uji: [
+      { id: "J1", judul: "Laporan turnaround time",
+        pra: "Beberapa order sudah dirilis.",
+        langkah: ["<strong>Laporan → TAT</strong>, pilih rentang tanggal."],
+        harap: "Menampilkan waktu dari penerimaan sampai rilis, dapat disaring per rentang." },
+      { id: "J2", judul: "Laporan produktivitas",
+        pra: "—", langkah: ["<strong>Laporan → Produktivitas</strong>."],
+        harap: "Jumlah pemeriksaan per petugas dan per periode." },
+      { id: "J3", judul: "Ekspor CSV terbuka benar di spreadsheet",
+        pra: "—",
+        langkah: ["Ekspor salah satu laporan.", "Buka berkasnya di Excel atau LibreOffice."],
+        harap: "Kolom terpisah rapi dan huruf beraksen tampil benar. Pemisahnya titik koma, sesuai kebiasaan Excel berlokal Indonesia." },
+      { id: "J4", judul: "Daftar order membatasi rentang secara bawaan",
+        pra: "—", langkah: ["Buka daftar order."],
+        harap: "Bawaannya hari ini. Rentang lebih panjang dipilih sendiri oleh pengguna, agar daftar tetap ringan saat database membesar." }
+    ]
+  }
+];
+
+const KUNCI = "lis-uji-fungsi-v1";
+
+function muat() {
+  try {
+    return JSON.parse(localStorage.getItem(KUNCI) || "{}") || {};
+  } catch (e) { return {}; }
+}
+function simpan(state) {
+  try { localStorage.setItem(KUNCI, JSON.stringify(state)); } catch (e) { /* mode privat */ }
+}
+
+let state = muat();
+
+function esc(s) { return String(s).replace(/&(?![a-z]+;|#)/g, "&amp;"); }
+
+function bangun() {
+  const isi = document.getElementById("isi");
+  const bagian = DATA.map((k) => {
+    const kartu = k.uji.map((u) => {
+      const st = (state[u.id] && state[u.id].status) || "";
+      const ct = (state[u.id] && state[u.id].catatan) || "";
+      const lencana = [
+        u.kritis ? '<span class="lencana kritis">kritis</span>' : "",
+        u.cli ? '<span class="lencana cli">baris perintah</span>' : ""
+      ].join("");
+      const langkah = u.langkah.map((l) => "<li>" + l + "</li>").join("");
+      const pre = u.pre ? "<pre><code>" + esc(u.pre) + "</code></pre>" : "";
+      const radio = ["lulus", "gagal", "lewati"].map((v) =>
+        '<label><input type="radio" name="s-' + u.id + '" value="' + v + '" data-uji="' + u.id + '"' +
+        (st === v ? " checked" : "") + '><span>' + v[0].toUpperCase() + v.slice(1) + "</span></label>"
+      ).join("");
+
+      return '<article class="uji" data-status="' + st + '" data-id="' + u.id + '"' +
+        (u.kritis ? ' data-kritis="1"' : "") + '>' +
+          '<div class="uji-kepala">' +
+            '<span class="kode-uji">' + u.id + "</span>" +
+            "<h3>" + u.judul + "</h3>" + lencana +
+          "</div>" +
+          '<dl class="rinci">' +
+            "<dt>Prasyarat</dt><dd>" + u.pra + "</dd>" +
+            "<dt>Langkah</dt><dd><ol>" + langkah + "</ol></dd>" +
+            "<dt>Diharapkan</dt><dd>" + u.harap + pre + "</dd>" +
+          "</dl>" +
+          '<div class="kendali">' +
+            '<div class="pilihan">' + radio + "</div>" +
+            '<input class="catatan" type="text" data-uji="' + u.id +
+              '" placeholder="Catatan penguji…" value="' + ct.replace(/"/g, "&quot;") + '">' +
+          "</div>" +
+        "</article>";
+    }).join("");
+
+    return '<section class="kelompok" id="k-' + k.id + '" style="--warna:' + k.warna + '">' +
+        '<div class="kelompok-kepala">' +
+          '<i class="tabung"></i>' +
+          "<h2>" + k.id + ". " + k.judul + "</h2>" +
+          '<span class="cakupan">' + k.uji.length + " uji</span>" +
+        "</div>" +
+        '<p class="catatan-kelompok">' + k.catatan + "</p>" +
+        '<div class="daftar">' + kartu + "</div>" +
+      "</section>";
+  }).join("");
+
+  isi.innerHTML = bagian;
+}
+
+function hitung() {
+  const semua = DATA.flatMap((k) => k.uji);
+  const n = { lulus: 0, gagal: 0, lewati: 0, belum: 0 };
+  semua.forEach((u) => {
+    const s = (state[u.id] && state[u.id].status) || "";
+    if (s === "lulus" || s === "gagal" || s === "lewati") n[s]++;
+    else n.belum++;
+  });
+  const total = semua.length;
+  document.getElementById("n-lulus").textContent = n.lulus;
+  document.getElementById("n-gagal").textContent = n.gagal;
+  document.getElementById("n-lewati").textContent = n.lewati;
+  document.getElementById("n-belum").textContent = n.belum;
+  document.getElementById("bar-lulus").style.width  = (n.lulus  / total * 100) + "%";
+  document.getElementById("bar-gagal").style.width  = (n.gagal  / total * 100) + "%";
+  document.getElementById("bar-lewati").style.width = (n.lewati / total * 100) + "%";
+}
+
+document.addEventListener("change", (e) => {
+  const t = e.target;
+  if (t.matches('input[type="radio"][data-uji]')) {
+    const id = t.dataset.uji;
+    state[id] = Object.assign({}, state[id], { status: t.value });
+    simpan(state);
+    const kartu = document.querySelector('.uji[data-id="' + id + '"]');
+    if (kartu) kartu.dataset.status = t.value;
+    hitung();
+    saring();
+  }
+});
+
+document.addEventListener("input", (e) => {
+  if (e.target.matches("input.catatan[data-uji]")) {
+    const id = e.target.dataset.uji;
+    state[id] = Object.assign({}, state[id], { catatan: e.target.value });
+    simpan(state);
+  }
+});
+
+let filter = "semua";
+const tombol = {
+  semua:  document.getElementById("f-semua"),
+  belum:  document.getElementById("f-belum"),
+  gagal:  document.getElementById("f-gagal"),
+  kritis: document.getElementById("f-kritis")
+};
+
+function saring() {
+  document.querySelectorAll(".uji").forEach((el) => {
+    const st = el.dataset.status || "";
+    let tampil = true;
+    if (filter === "belum")  tampil = st === "";
+    if (filter === "gagal")  tampil = st === "gagal";
+    if (filter === "kritis") tampil = el.dataset.kritis === "1";
+    el.classList.toggle("sembunyi", !tampil);
+  });
+  document.querySelectorAll(".kelompok").forEach((k) => {
+    const ada = k.querySelectorAll(".uji:not(.sembunyi)").length > 0;
+    k.classList.toggle("sembunyi", !ada);
+  });
+}
+
+Object.keys(tombol).forEach((nama) => {
+  tombol[nama].addEventListener("click", () => {
+    filter = nama;
+    Object.keys(tombol).forEach((n) => tombol[n].setAttribute("aria-pressed", String(n === nama)));
+    saring();
+  });
+});
+
+document.getElementById("salin").addEventListener("click", async (e) => {
+  const baris = ["# Hasil Uji Fungsi LIS", ""];
+  DATA.forEach((k) => {
+    baris.push("## " + k.id + ". " + k.judul);
+    k.uji.forEach((u) => {
+      const s = (state[u.id] && state[u.id].status) || "belum diuji";
+      const c = (state[u.id] && state[u.id].catatan) || "";
+      baris.push("- [" + s + "] " + u.id + " " + u.judul + (u.kritis ? " (kritis)" : "") + (c ? " — " + c : ""));
+    });
+    baris.push("");
+  });
+  const teks = baris.join("\n");
+  try {
+    await navigator.clipboard.writeText(teks);
+    e.target.textContent = "Tersalin";
+    setTimeout(() => { e.target.textContent = "Salin ringkasan"; }, 1600);
+  } catch (err) {
+    e.target.textContent = "Gagal menyalin";
+    setTimeout(() => { e.target.textContent = "Salin ringkasan"; }, 1600);
+  }
+});
+
+document.getElementById("reset").addEventListener("click", () => {
+  state = {};
+  simpan(state);
+  bangun();
+  hitung();
+  saring();
+});
+
+bangun();
+hitung();
+</script>

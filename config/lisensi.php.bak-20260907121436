@@ -1,0 +1,41 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * IDENTITAS APLIKASI — BERTANDA TANGAN.
+ *
+ * Jangan menyunting berkas ini dengan tangan. Nilai tanda_tangan di
+ * bawah dihitung dari seluruh isi data dan berkas; satu huruf yang
+ * berubah membuatnya tidak cocok, aplikasi terkunci, dan seluruh
+ * kredensial API berhenti melayani.
+ *
+ * Tanda tangan RSA-SHA256. Hanya pemegang kunci privat yang dapat
+ * membuatnya; kunci itu tidak tersimpan di server ini.
+ *
+ * Diterbitkan: 2026-09-07 11:52:56 WIB
+ */
+
+return [
+    'data' => [
+        'aplikasi'      => 'LIS RSUD Hanau',
+        'versi'         => '1.0.0',
+        'instansi'      => 'RSUD Hanau',
+        'unit'          => 'Instalasi Laboratorium',
+        'pengembang'    => 'Rendra',
+        'kontak'        => '',
+        'lisensi'       => 'Lisensi tunggal untuk instansi tersebut di atas',
+        'no_lisensi'    => 'LIS-HANAU-001',
+        'diterbitkan'   => '2026-09-07',
+        'berlaku'       => 'Tanpa batas waktu',
+        'donasi_bank'   => 'Bank Mandiri',
+        'donasi_rekening' => '1590014271265',
+        'donasi_atas_nama' => 'Rendra Yusrimaelani',
+        'donasi_qris'   => '',
+        'donasi_catatan' => 'Terima kasih atas dukungannya.',
+    ],
+    'berkas' => [
+        'app/Views/about.php'            => 'b62101cdc26b09fc74b9401599c88aa52c7688768fdc0e9845d23c657726b417',
+        'app/Core/Lisensi.php'           => 'f9f6ec51e9d5c228ff37bf973440e8fb4234c181d7f16d7120873722b912a901',
+    ],
+    'tanda_tangan' => 'lv+PUNz51Fb+mEGrYQcL/sUbSEBdM18SBCQ4ojQocJK5GJjMjBAhSQrxfa8ru2BOwZPKmj8k3VwbAhQ0DM5cUCSFubvd9m3ZwzS4k39/tTR51hsBfs/zvLbrZBHRihzCb+M07ecu7r9igY3gt4Rx2VfoYORtBraAu/cT7BhLWGgJCWtd43fIOUhVuaTyvmN8O1NSE6LsQe31V3lMClmQmmZF4dAhi102U/yujYbn8QNa6EB7SOWOpkGK2L66ykKaqajAyRR7nY5CHOSNRE6POnJC3ziGn3UDhOlmry9ZxFJZEhLQReg2ToAX09Lbkl6zovwWjxS2vmwqCHNCR/gZnZ1Cg6rlScvW/+rkJSBpybJkD+j9jbXPl33LZeYmeaELMB8ua+5udVkxojBetudFp4aQVOsCSnH+NpUD8IjBPyJJpWDmx+OxV0meUy1LV4lerK8E6YzWE4ww8fE9I7HnCw51Agynpz3py5Vg507EbdpnFLzytceaIsousWHJ+lkH',
+];

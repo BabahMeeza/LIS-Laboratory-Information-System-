@@ -1,0 +1,67 @@
+# =====================================================================
+#  LIS — aturan rewrite front controller (Apache / XAMPP)
+#  Semua permintaan yang bukan berkas nyata diarahkan ke index.php.
+# =====================================================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # RewriteBase SENGAJA tidak diisi.
+    #
+    # Tanpa RewriteBase, mod_rewrite menyelesaikan substitusi relatif
+    # (index.php) terhadap folder tempat berkas .htaccess ini berada,
+    # sehingga aturan yang sama bekerja baik di DocumentRoot maupun di
+    # sub-folder seperti /LIS/public.
+    #
+    # Menuliskan "RewriteBase /" justru mengarahkan setiap permintaan ke
+    # /index.php pada DocumentRoot — pada XAMPP itu berarti halaman
+    # dashboard XAMPP, dengan status 200, sehingga kesalahannya sulit
+    # dikenali. Jangan tambahkan baris itu.
+
+    # Teruskan header Authorization (dipakai bila kelak memakai Bearer token).
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Buang garis miring di akhir agar rute konsisten.
+    # Substitusi ditulis relatif ($1, bukan /$1) agar awalan sub-folder
+    # tetap terjaga saat pengalihan.
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.+)/$ $1 [L,R=301]
+
+    # Berkas dan folder yang benar-benar ada dilayani apa adanya.
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Sisanya ke front controller.
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    # Tanpa mod_rewrite, aplikasi tidak dapat berjalan.
+    # Aktifkan mod_rewrite pada httpd.conf XAMPP:
+    #   LoadModule rewrite_module modules/mod_rewrite.so
+    # dan pastikan AllowOverride All pada blok <Directory>.
+    <IfModule mod_php.c>
+        php_value auto_prepend_file none
+    </IfModule>
+</IfModule>
+
+# Jangan tampilkan daftar isi folder.
+Options -Indexes
+
+# Jangan bocorkan versi PHP.
+<IfModule mod_headers.c>
+    Header always unset X-Powered-By
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "same-origin"
+</IfModule>
+
+# Cache aset statis.
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css            "access plus 7 days"
+    ExpiresByType application/javascript "access plus 7 days"
+    ExpiresByType image/svg+xml       "access plus 7 days"
+</IfModule>
