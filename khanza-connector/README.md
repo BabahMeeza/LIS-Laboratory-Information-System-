@@ -44,7 +44,7 @@ php -r "echo bin2hex(random_bytes(24)), PHP_EOL;"   # untuk api_key
 php -r "echo bin2hex(random_bytes(24)), PHP_EOL;"   # untuk api_secret
 
 # 4. Uji
-curl -H "X-API-Key: 6fbc335ac96171bf783754c648e4a3961f0467ee63b1e3d3" http://localhost/khanza-connector/api/ping.php
+curl -H "X-API-Key: KUNCI_ANDA" http://localhost/khanza-connector/api/ping.php
 ```
 
 Jawaban yang diharapkan:
@@ -82,7 +82,7 @@ Konektor dapat menulis data medis. Terapkan seluruhnya:
    database. Uji dari peramban:
 
    ```
-   http://localhost/khanza-connector/config.php
+   http://server-khanza/khanza-connector/config.php
    ```
 
    Harus menghasilkan **403**, bukan isi berkas. Bila isinya terbaca,
@@ -96,7 +96,7 @@ Jalankan `push_orders.php` berkala agar order langsung mengalir ke LIS:
 
 ```
 # Linux/macOS — setiap menit
-* * * * * /usr/bin/php /Applications/XAMPP/xamppfiles/htdocs/khanza-connector/push_orders.php
+* * * * * /usr/bin/php /var/www/khanza-connector/push_orders.php
 
 # Windows Task Scheduler
 Program : C:\xampp\php\php.exe

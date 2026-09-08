@@ -71,30 +71,10 @@ if (tabelAda('jns_perawatan_lab', 'db_sik')) {
 $batas = (int) ($_GET['limit'] ?? 5000);
 $batas = max(1, min(20000, $batas));
 
-$mulai = (int) ($_GET['offset'] ?? 0);
-$mulai = max(0, $mulai);
-
-// Total sebenarnya, dihitung terpisah dari LIMIT.
-//
-// MENGAPA PENTING: sebelumnya endpoint ini hanya mengembalikan paling
-// banyak 5000 baris dan berkata "5000 parameter diekspor" — kalimat yang
-// terdengar seperti keberhasilan penuh. Laboratorium dengan lebih dari
-// 5000 baris template kehilangan sisanya tanpa satu pun tanda, baik di
-// konektor maupun di LIS. Dengan total dikirim terpisah, LIS dapat
-// mengetahui bahwa masih ada sisa dan mengambilnya.
-$total = null;
-try {
-    $baris = ambilSemua('SELECT COUNT(*) AS n FROM template_laboratorium', [], 'db_sik');
-    $total = isset($baris[0]['n']) ? (int) $baris[0]['n'] : null;
-} catch (Throwable $e) {
-    // Menghitung total bukan syarat; bila gagal, biarkan null.
-    $total = null;
-}
-
 try {
     $rows = ambilSemua(
         'SELECT ' . implode(', ', $pilih) . " FROM template_laboratorium t $gabung "
-        . 'ORDER BY t.kd_jenis_prw, t.id_template LIMIT ' . $batas . ' OFFSET ' . $mulai,
+        . 'ORDER BY t.kd_jenis_prw, t.id_template LIMIT ' . $batas,
         [],
         'db_sik'
     );
@@ -103,24 +83,6 @@ try {
     gagal('Gagal membaca template_laboratorium: ' . $e->getMessage(), 500);
 }
 
-$terkirim = count($rows);
-$sisa     = $total === null ? null : max(0, $total - ($mulai + $terkirim));
+catat('info', count($rows) . ' template diekspor ke LIS');
 
-catat('info', sprintf(
-    '%d template diekspor ke LIS (offset %d, total %s)',
-    $terkirim, $mulai, $total === null ? '?' : $total
-));
-
-sukses(
-    $rows,
-    $sisa === null || $sisa === 0
-        ? $terkirim . ' parameter pemeriksaan diekspor.'
-        : sprintf('%d parameter diekspor, %d masih tersisa.', $terkirim, $sisa),
-    [
-        'total'    => $total,
-        'offset'   => $mulai,
-        'limit'    => $batas,
-        'terkirim' => $terkirim,
-        'sisa'     => $sisa,
-    ]
-);
+sukses($rows, count($rows) . ' parameter pemeriksaan diekspor.');

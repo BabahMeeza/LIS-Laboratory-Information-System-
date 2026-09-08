@@ -1,2 +1,9 @@
 # Pustaka internal — tidak boleh dipanggil langsung lewat web.
-Require all denied
+# Ditulis untuk Apache 2.2 dan 2.4 sekaligus; lihat catatan di ../.htaccess
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>

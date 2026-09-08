@@ -110,25 +110,15 @@ function jawab(array $data, int $status = 200): void
     exit;
 }
 
-function sukses($data = null, string $pesan = 'OK', array $meta = []): void
+function sukses($data = null, string $pesan = 'OK'): void
 {
-    $amplop = [
+    jawab([
         'sukses' => true,
         'pesan'  => $pesan,
         'data'   => $data,
         'versi'  => KONEKTOR_VERSI,
         'waktu'  => date('c'),
-    ];
-
-    // "meta" membawa keterangan tentang PENGAMBILANNYA sendiri - terutama
-    // total baris yang tersedia dibanding yang dikirim. Tanpa itu,
-    // pemotongan karena LIMIT tidak dapat dibedakan dari "memang cuma
-    // segitu datanya", dan data yang hilang tidak pernah ketahuan.
-    if ($meta !== []) {
-        $amplop['meta'] = $meta;
-    }
-
-    jawab($amplop);
+    ]);
 }
 
 function gagal(string $pesan, int $status = 400, $data = null): void
