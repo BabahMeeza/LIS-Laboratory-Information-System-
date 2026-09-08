@@ -12,16 +12,16 @@ declare(strict_types=1);
  * Tanda tangan RSA-SHA256. Hanya pemegang kunci privat yang dapat
  * membuatnya; kunci itu tidak tersimpan di server ini.
  *
- * Diterbitkan: 2026-09-07 11:52:56 WIB
+ * Diterbitkan: 2026-09-07 12:16:41 WIB
  */
 
 return [
     'data' => [
-        'aplikasi'      => 'LIS RSUD Hanau',
+        'aplikasi'      => 'LIS Khanza',
         'versi'         => '1.0.0',
-        'instansi'      => 'RSUD Hanau',
+        'instansi'      => 'Khanza',
         'unit'          => 'Instalasi Laboratorium',
-        'pengembang'    => 'Rendra',
+        'pengembang'    => 'Rendra Yusrimaelani',
         'kontak'        => '',
         'lisensi'       => 'Lisensi tunggal untuk instansi tersebut di atas',
         'no_lisensi'    => 'LIS-HANAU-001',
@@ -34,8 +34,8 @@ return [
         'donasi_catatan' => 'Terima kasih atas dukungannya.',
     ],
     'berkas' => [
-        'app/Views/about.php'            => 'b62101cdc26b09fc74b9401599c88aa52c7688768fdc0e9845d23c657726b417',
-        'app/Core/Lisensi.php'           => 'f9f6ec51e9d5c228ff37bf973440e8fb4234c181d7f16d7120873722b912a901',
+        'app/Views/about.php'            => '9ad0517965289e292f36249b11668ac52489167e7e0d2189a48f60e227177d56',
+        'app/Core/Lisensi.php'           => 'db4ccba4f3d1bcd0e23bad4dd66946a3a8c61bdd4660096eeb83c75a5abe9c2d',
     ],
-    'tanda_tangan' => 'lv+PUNz51Fb+mEGrYQcL/sUbSEBdM18SBCQ4ojQocJK5GJjMjBAhSQrxfa8ru2BOwZPKmj8k3VwbAhQ0DM5cUCSFubvd9m3ZwzS4k39/tTR51hsBfs/zvLbrZBHRihzCb+M07ecu7r9igY3gt4Rx2VfoYORtBraAu/cT7BhLWGgJCWtd43fIOUhVuaTyvmN8O1NSE6LsQe31V3lMClmQmmZF4dAhi102U/yujYbn8QNa6EB7SOWOpkGK2L66ykKaqajAyRR7nY5CHOSNRE6POnJC3ziGn3UDhOlmry9ZxFJZEhLQReg2ToAX09Lbkl6zovwWjxS2vmwqCHNCR/gZnZ1Cg6rlScvW/+rkJSBpybJkD+j9jbXPl33LZeYmeaELMB8ua+5udVkxojBetudFp4aQVOsCSnH+NpUD8IjBPyJJpWDmx+OxV0meUy1LV4lerK8E6YzWE4ww8fE9I7HnCw51Agynpz3py5Vg507EbdpnFLzytceaIsousWHJ+lkH',
+    'tanda_tangan' => 'TpdRI3XAIHrlexlxDW2U5fRKkUmm5Z+8fMEycF26mE3LZ2TVVlc1aD7YA/xRMfSPu+h7mXoSwW6D0XrLsp2KvhMpOiDtjusDPm7JOskuJoipYqA8JM0EaUdWpCDuOyFo7ZzcFxecxQj1zlfpxAsx+sx8g6YR3ekCK6kErq2efOPE2SCuOH/09C0zDYPKNKQbiRlxXzDtE0YnFQL5VnF5QCAIJTgcKIr2vVwW7J03Kbsng2Aq5bqV8YiN37lsYcXvK9nbmKeezZvP87nT2prt4hVgj7SFpVbxaDyZVgasKXNVIfRoh1hcLoAcaYYgy0xDJ3iRUvl9kgyd/itir3BYH745uuancE477cn1jQ6kQ7RCSvV1rv4cpCTSP5B/oJY6FSaWbOuSZaEIAGpZGf2l/WyoiLEIdydWZeElk/tdBHa6TEBG15jZ8DT29I+pF4eqHhVfSS8oiI4wulZrPSMB3yENppuwe4KwuaQ6vYTOpSJFUO7fVqY6p4HNpRAAq/Wi',
 ];

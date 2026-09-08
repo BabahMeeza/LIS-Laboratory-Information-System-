@@ -12,16 +12,16 @@ declare(strict_types=1);
  * Tanda tangan RSA-SHA256. Hanya pemegang kunci privat yang dapat
  * membuatnya; kunci itu tidak tersimpan di server ini.
  *
- * Diterbitkan: 2026-09-07 12:16:41 WIB
+ * Diterbitkan: 2026-09-08 11:30:36 WIB
  */
 
 return [
     'data' => [
-        'aplikasi'      => 'LIS RSUD Hanau',
+        'aplikasi'      => 'LIS Khanza',
         'versi'         => '1.0.0',
-        'instansi'      => 'RSUD Hanau',
+        'instansi'      => 'Khanza',
         'unit'          => 'Instalasi Laboratorium',
-        'pengembang'    => 'Rendra',
+        'pengembang'    => 'Rendra Yusrimaelani',
         'kontak'        => '',
         'lisensi'       => 'Lisensi tunggal untuk instansi tersebut di atas',
         'no_lisensi'    => 'LIS-HANAU-001',
@@ -37,5 +37,5 @@ return [
         'app/Views/about.php'            => '9ad0517965289e292f36249b11668ac52489167e7e0d2189a48f60e227177d56',
         'app/Core/Lisensi.php'           => 'db4ccba4f3d1bcd0e23bad4dd66946a3a8c61bdd4660096eeb83c75a5abe9c2d',
     ],
-    'tanda_tangan' => 'TpdRI3XAIHrlexlxDW2U5fRKkUmm5Z+8fMEycF26mE3LZ2TVVlc1aD7YA/xRMfSPu+h7mXoSwW6D0XrLsp2KvhMpOiDtjusDPm7JOskuJoipYqA8JM0EaUdWpCDuOyFo7ZzcFxecxQj1zlfpxAsx+sx8g6YR3ekCK6kErq2efOPE2SCuOH/09C0zDYPKNKQbiRlxXzDtE0YnFQL5VnF5QCAIJTgcKIr2vVwW7J03Kbsng2Aq5bqV8YiN37lsYcXvK9nbmKeezZvP87nT2prt4hVgj7SFpVbxaDyZVgasKXNVIfRoh1hcLoAcaYYgy0xDJ3iRUvl9kgyd/itir3BYH745uuancE477cn1jQ6kQ7RCSvV1rv4cpCTSP5B/oJY6FSaWbOuSZaEIAGpZGf2l/WyoiLEIdydWZeElk/tdBHa6TEBG15jZ8DT29I+pF4eqHhVfSS8oiI4wulZrPSMB3yENppuwe4KwuaQ6vYTOpSJFUO7fVqY6p4HNpRAAq/Wi',
+    'tanda_tangan' => 'Dg0gjUSWM8IYsv7ByBZQNyF9QVTA20DZIktAAELKn9PmtyVOinWR5UsIWEIzJ2ZJ6QejHZHU7HoRod/u9F1gEtuJ28hogSnEJH+KYPf42CTt/SyZ6J/WlVSM8bp2gZ6/SL+KkGtd1sVMSwYUqXln9UiSNzbgs0J99V5HFfc/Y/KmLLUcH/UQveAH5SyY0cFEpbd0pdLRym5H5JbPDs0qNdL5RIsrVIWHVC9TDCUQEA4YyPteZq+nvOBjKXhM40BzaM22Xx4EYL5/znhqHdQQuMGZgjwuGwY0Bz/2h1UqhwQVjjo4xm4CeLpMBqO2PTHCr646xGy+csj1FlwuLbW7iyGdkTdjCdPRgA8hOFp/HrRUJIHvmjCJG6p5Z2P2RIy61Z6VzrrTzl9KC28c0s54pIGRH1GWj/vf0UjLEGsAVi4oULphOwIzZSE9wyRxrLEo3WCbfjIDTD3WOO9kH/ziBS3TOAr0Xs4aZ4ClBIcnv7bWhiZ7tsNgPuY+DK6BcN7e',
 ];
