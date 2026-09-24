@@ -1,0 +1,70 @@
+# =====================================================================
+#  Unit systemd untuk middleware alat laboratorium.
+#
+#  Di pengembangan, middleware dijalankan dengan `npm start` di sebuah
+#  terminal. Cara itu tidak selamat dipakai di produksi: prosesnya mati
+#  saat terminal ditutup, saat sesi SSH putus, dan tidak pernah kembali
+#  setelah server dinyalakan ulang. Gejalanya persis "port 9701 tidak
+#  berjalan" — bukan karena salah konfigurasi, melainkan karena memang
+#  tidak ada yang menjalankannya.
+#
+#  PEMASANGAN
+#    1. Sesuaikan User, WorkingDirectory, dan ExecStart di bawah.
+#    2. sudo cp lis-middleware.service /etc/systemd/system/
+#    3. sudo systemctl daemon-reload
+#    4. sudo systemctl enable --now lis-middleware
+#
+#  MEMERIKSA
+#    systemctl status lis-middleware
+#    journalctl -u lis-middleware -f          # log langsung
+#    journalctl -u lis-middleware -n 100      # 100 baris terakhir
+#
+#  Bila middleware gagal hidup, journalctl memuat alasannya apa adanya —
+#  termasuk baris "Server kesehatan gagal dijalankan" beserta kodenya.
+# =====================================================================
+
+[Unit]
+Description=LIS — Middleware Alat Laboratorium
+Documentation=file:///opt/lis/middleware/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+
+# Jangan jalankan sebagai root. Buat pengguna khusus bila belum ada:
+#   sudo useradd --system --no-create-home --shell /usr/sbin/nologin lis
+User=lis
+Group=lis
+
+# Folder middleware, bukan folder LIS.
+WorkingDirectory=/opt/lis/middleware
+
+# Pakai jalur mutlak. systemd tidak membaca PATH milik shell Anda, dan
+# `node` yang ketemu di terminal belum tentu ketemu di sini.
+# Cari dengan: which node
+ExecStart=/usr/bin/node src/index.js
+
+Restart=always
+RestartSec=5
+
+# Bila alat memakai port serial, pengguna di atas harus masuk grup dialout:
+#   sudo usermod -aG dialout lis
+# SupplementaryGroups=dialout
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=lis-middleware
+
+# Pengetatan wajar. Longgarkan bila middleware perlu menulis di luar
+# folder kerjanya.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+# Folder log dan spool harus tetap dapat ditulis.
+ReadWritePaths=/opt/lis/middleware/logs /opt/lis/middleware/spool
+
+[Install]
+WantedBy=multi-user.target

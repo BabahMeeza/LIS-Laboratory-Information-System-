@@ -230,7 +230,22 @@ class Gateway {
 
     transport.on('status', (status, galat) => {
       entri.status = status;
-      entri.galat = galat;
+
+      // Sebab kegagalan TIDAK dihapus oleh peristiwa berikutnya.
+      //
+      // Soket yang gagal menyambung memancarkan 'error' (berisi sebab),
+      // lalu segera 'close' (tanpa sebab). Sebelumnya baris kedua menimpa
+      // yang pertama, sehingga /health selalu menampilkan status "offline"
+      // dengan galat null — tepat keadaan saat seseorang paling butuh tahu
+      // alasannya. Sebab hanya dibersihkan ketika koneksi benar-benar
+      // berhasil, karena saat itulah ia memang tidak berlaku lagi.
+      if (galat) {
+        entri.galat = galat;
+        entri.galatPada = new Date();
+      } else if (status === 'online') {
+        entri.galat = null;
+        entri.galatPada = null;
+      }
     });
 
     transport.on('connection', (koneksi) => {
@@ -410,7 +425,9 @@ class Gateway {
 
     // Pesan hasil pasien.
     if (jenis.startsWith('ORU') || jenis.startsWith('OUL')) {
-      const payload = hl7.keNormal(pesan, alat.code);
+      const payload = hl7.keNormal(pesan, alat.code, {
+        bedakanTipeNilai: alat.bedakan_tipe_nilai === true || alat.bedakan_tipe_nilai === 1,
+      });
       const aman = this._terimaHasil(alat, payload);
 
       // Jawab sesuai kenyataan. Membalas "AA" padahal hasilnya gagal
@@ -596,9 +613,22 @@ class Gateway {
         nama: e.alat.name,
         protokol: e.alat.protocol,
         transport: e.alat.transport,
+
+        // Alamat yang benar-benar dipakai ikut ditampilkan.
+        //
+        // Seluruh baris ini datang dari database LIS yang sedang dituju —
+        // tidak ada berkas konfigurasi alat di mesin middleware, dan tidak
+        // ada cadangan lokal. Menunjuk LIS yang berbeda karena itu mengubah
+        // perilaku alat tanpa satu pun berkas di sini berubah, dan tanpa
+        // baris ini hal itu hanya terlihat di log saat middleware dimulai.
+        alamat: e.alat.transport === 'serial'
+          ? (e.alat.serial?.port ?? null)
+          : `${e.alat.tcp?.host ?? '?'}:${e.alat.tcp?.port ?? '?'}`,
+
         mode: e.alat.mode,
         status: e.status,
         galat: e.galat,
+        galat_pada: e.galatPada ? e.galatPada.toISOString() : null,
         koneksi_aktif: e.sesi.size,
         pesan_diterima: e.jumlahPesan,
         data_terakhir: e.terakhirData === null ? null : e.terakhirData.toISOString(),

@@ -69,7 +69,7 @@ const config = {
   root: ROOT,
 
   lis: {
-    baseUrl: str('LIS_BASE_URL', 'http://192.168.20.85/LIS/public').replace(/\/+$/, ''),
+    baseUrl: str('LIS_BASE_URL', 'http://192.168.10.24/LIS/public').replace(/\/+$/, ''),
     apiKey: str('LIS_API_KEY'),
     apiSecret: str('LIS_API_SECRET'),
     signRequests: bool('LIS_SIGN_REQUESTS', false),
@@ -77,6 +77,20 @@ const config = {
   },
 
   healthPort: int('HEALTH_PORT', 9701),
+
+  // Antarmuka tempat endpoint kesehatan mendengar.
+  //
+  // Bawaannya 127.0.0.1 — hanya dapat dihubungi dari mesin yang sama.
+  // Aman, tetapi memutus halaman Alat bila LIS berada di mesin lain:
+  // portnya memang tidak pernah terbuka ke jaringan, sehingga terlihat
+  // seperti middleware mati padahal ia bekerja normal.
+  //
+  // Isi 0.0.0.0 bila LIS berada di mesin berbeda. Yang terbuka hanyalah
+  // ringkasan status alat — kode, nama, jumlah pesan, uptime — tanpa data
+  // pasien dan tanpa kemampuan mengubah apa pun. Meski begitu, buka hanya
+  // pada jaringan yang Anda percayai.
+  healthBind: str('HEALTH_BIND', '192.168.20.15'),
+
   heartbeatSeconds: int('HEARTBEAT_SECONDS', 30),
   configRefreshSeconds: int('CONFIG_REFRESH_SECONDS', 300),
   worklistPollSeconds: int('WORKLIST_POLL_SECONDS', 20),

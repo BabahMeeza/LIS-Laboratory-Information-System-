@@ -155,6 +155,111 @@ const PADANAN = [
     'bta'                 => 'BTA',
 ];
 
+/**
+ * Padanan yang HANYA berlaku di dalam satu kategori.
+ *
+ * INI YANG MENJAGA "LEUKOSIT" TIDAK SALAH TEMPAT
+ *
+ * Nama parameter di Khanza tidak menyebutkan spesimennya. Paket "Urine
+ * Lengkap" berisi baris bernama "Leukosit", dan paket "Darah Rutin" juga
+ * berisi baris bernama "Leukosit". Keduanya identik sebagai teks, dan
+ * keduanya tertangkap PADANAN global sebagai 'leukosit' => 'WBC'.
+ *
+ * Tanpa pembatas, hitung leukosit SEDIMEN URINE tersimpan sebagai hitung
+ * leukosit DARAH. Satuannya berbeda (/LPB lawan 10^3/uL), nilai rujukannya
+ * berbeda, dan angkanya tetap terlihat wajar. Tidak ada yang menyadarinya
+ * sampai ada klinisi mengambil keputusan dari angka itu.
+ *
+ * Yang membedakan adalah PAKET tempat baris itu berada — nm_perawatan.
+ * Daftar di bawah dipakai lebih dulu bila kategori paketnya dikenali;
+ * PADANAN global hanya dipakai bila tidak bertentangan dengan kategori itu.
+ */
+const PADANAN_KONTEKS = [
+    // 3 = Urinalisa
+    3 => [
+        'leukosit'         => 'U_SED_LEU',
+        'lekosit'          => 'U_SED_LEU',
+        'leucosit'         => 'U_SED_LEU',
+        'wbc'              => 'U_SED_LEU',
+        'eritrosit'        => 'U_SED_ERI',
+        'erytrosit'        => 'U_SED_ERI',
+        'eritrocit'        => 'U_SED_ERI',
+        'rbc'              => 'U_SED_ERI',
+        'epitel'           => 'U_SED_EPI',
+        'selepitel'        => 'U_SED_EPI',
+        'silinder'         => 'U_SED_SIL',
+        'cast'             => 'U_SED_SIL',
+        'kristal'          => 'U_SED_KRIS',
+        'bakteri'          => 'U_SED_BAKT',
+        'ph'               => 'U_PH',
+        'bj'               => 'U_BJ',
+        'beratjenis'       => 'U_BJ',
+        'protein'          => 'U_PROT',
+        'albumin'          => 'U_PROT',   // carik celup menyebutnya albumin
+        'reduksi'          => 'U_GLU',
+        'glukosa'          => 'U_GLU',
+        'gula'             => 'U_GLU',
+        'keton'            => 'U_KET',
+        'bendaketon'       => 'U_KET',
+        'bilirubin'        => 'U_BIL',
+        'urobilinogen'     => 'U_URO',
+        'urobilin'         => 'U_URO',
+        'nitrit'           => 'U_NIT',
+        'darahsamar'       => 'U_BLD',
+        'blood'            => 'U_BLD',
+        'leukositesterase' => 'U_LEU',
+        'esterase'         => 'U_LEU',
+        'warna'            => 'U_WARNA',
+        'kejernihan'       => 'U_KEJERNIHAN',
+        'kekeruhan'        => 'U_KEJERNIHAN',
+    ],
+
+    // 6 = Feses
+    6 => [
+        'makroskopis'      => 'F_MAKRO',
+        'makroskopik'      => 'F_MAKRO',
+        'warna'            => 'F_MAKRO',
+        'konsistensi'      => 'F_MAKRO',
+        'telurcacing'      => 'F_TELUR',
+        'telorcacing'      => 'F_TELUR',
+        'cacing'           => 'F_TELUR',
+        'darahsamar'       => 'F_DARAH',
+        'benzidin'         => 'F_DARAH',
+        'occultblood'      => 'F_DARAH',
+    ],
+];
+
+/**
+ * Tebak kategori dari NAMA PAKET Khanza.
+ *
+ * Hanya dipakai untuk membedakan padanan yang bertabrakan, tidak pernah
+ * untuk memaksakan pemetaan. Bila paketnya tidak dikenali hasilnya 0, dan
+ * baris yang ambigu dilempar ke daftar "perlu diputuskan" — bukan ditebak.
+ */
+function kategoriPaket(string $namaPaket): int
+{
+    $p = strtolower($namaPaket);
+
+    $petunjuk = [
+        3 => ['urin', 'urine', 'urinalisa', 'urinalisis'],
+        6 => ['feses', 'faeces', 'tinja', 'fecal'],
+        5 => ['sputum', 'kultur', 'mikrobiologi', 'pewarnaan gram', 'bta', 'tcm'],
+        4 => ['widal', 'serologi', 'imuno', 'hbsag', 'hiv', 'sifilis', 'tpha', 'dengue', 'ns1', 'hepatitis'],
+        1 => ['darah rutin', 'darah lengkap', 'hematologi', 'cbc', 'hitung jenis', 'golongan darah'],
+        2 => ['kimia', 'fungsi hati', 'fungsi ginjal', 'lemak', 'lipid', 'elektrolit', 'gula darah', 'glukosa darah'],
+    ];
+
+    foreach ($petunjuk as $kategori => $kata) {
+        foreach ($kata as $k) {
+            if (str_contains($p, $k)) {
+                return $kategori;
+            }
+        }
+    }
+
+    return 0;
+}
+
 /** Normalkan nama supaya ejaan dan tanda baca tidak menghalangi pencocokan. */
 function normal(string $s): string
 {
@@ -173,19 +278,27 @@ echo "=====================================================================\n";
 // ---------------------------------------------------------------------
 // Master LIS
 // ---------------------------------------------------------------------
-$tests = Database::select('SELECT id, kode, nama, nama_singkat, aktif FROM tests');
+$tests = Database::select('SELECT id, kode, nama, nama_singkat, aktif, category_id FROM tests');
 
 if ($tests === []) {
     exit("\nMaster pemeriksaan LIS kosong. Jalankan database/02_seed_master.sql lebih dulu.\n");
 }
 
+// $olehNama menyimpan SEMUA pemeriksaan yang berbagi satu nama ternormalkan,
+// bukan yang pertama saja.
+//
+// Versi sebelumnya menyimpan satu nilai per nama, sehingga bila dua
+// pemeriksaan bernama sama, yang menang adalah yang kebetulan lebih dulu
+// dibaca dari database. Tabrakan seperti itu tidak menimbulkan galat dan
+// tidak tercatat di mana pun — ia hanya menghasilkan pemetaan yang salah.
+// Dengan menyimpan daftar, tabrakan menjadi terlihat dan dapat ditangani.
 $olehKode  = [];
 $olehNama  = [];
 foreach ($tests as $t) {
     $olehKode[strtoupper((string) $t['kode'])] = $t;
-    $olehNama[normal((string) $t['nama'])]     = $t;
+    $olehNama[normal((string) $t['nama'])][]   = $t;
     if (($t['nama_singkat'] ?? '') !== '') {
-        $olehNama[normal((string) $t['nama_singkat'])] ??= $t;
+        $olehNama[normal((string) $t['nama_singkat'])][] = $t;
     }
 }
 
@@ -230,6 +343,23 @@ if ($belum === []) {
 $pasti  = [];
 $ragu   = [];
 
+// Kata yang artinya berubah menurut spesimen.
+//
+// Dihitung, bukan ditulis tangan: setiap kata yang muncul di PADANAN
+// global DAN di PADANAN_KONTEKS dengan tujuan yang berbeda adalah kata
+// yang tidak boleh dipetakan tanpa tahu paketnya. "Leukosit" masuk ke
+// sini karena global menunjuk WBC sedangkan konteks urine menunjuk
+// U_SED_LEU. Menghitungnya berarti daftar ini ikut terbarui sendiri
+// setiap kali ada padanan baru ditambahkan.
+$kataBertabrakan = [];
+foreach (PADANAN_KONTEKS as $daftarKategori) {
+    foreach ($daftarKategori as $kata => $kodeTujuan) {
+        if (isset(PADANAN[$kata]) && PADANAN[$kata] !== $kodeTujuan) {
+            $kataBertabrakan[$kata] = true;
+        }
+    }
+}
+
 foreach ($belum as $t) {
     $nama = trim((string) ($t['pemeriksaan'] ?? ''));
     if ($nama === '') {
@@ -239,28 +369,116 @@ foreach ($belum as $t) {
 
     $n = normal($nama);
 
-    // 1. padanan tulis tangan
+    // Kategori paket — satu-satunya petunjuk spesimen yang dibawa Khanza.
+    $kat = kategoriPaket((string) ($t['nm_perawatan'] ?? ''));
+
+    // 1. Padanan khusus kategori. Dipakai LEBIH DULU daripada padanan
+    //    global, karena justru inilah yang membedakan leukosit urine dari
+    //    leukosit darah.
+    if ($kat !== 0 && isset(PADANAN_KONTEKS[$kat][$n]) && isset($olehKode[PADANAN_KONTEKS[$kat][$n]])) {
+        $pasti[] = [$t, $olehKode[PADANAN_KONTEKS[$kat][$n]], 'padanan ' . $kat];
+        continue;
+    }
+
+    // 1b. Paket tidak menunjukkan spesimen, dan katanya termasuk yang
+    //     artinya berubah menurut spesimen. Di sini menebak berarti
+    //     memilih antara darah dan urine dengan melempar koin.
+    if ($kat === 0 && isset($kataBertabrakan[$n])) {
+        $ragu[] = [$t, $olehKode[PADANAN[$n]] ?? null, sprintf(
+            'nama paket "%s" tidak menunjukkan spesimen, sedangkan "%s" berbeda arti '
+            . 'di darah dan di urine — putuskan manual',
+            mb_substr((string) ($t['nm_perawatan'] ?? ''), 0, 30),
+            $nama
+        )];
+        continue;
+    }
+
+    // 2. Padanan global — tetapi TIDAK bila hasilnya bertentangan dengan
+    //    kategori paketnya. "Leukosit" di paket urine tidak boleh mendarat
+    //    di WBC hematologi hanya karena daftar global mengatakan begitu.
     if (isset(PADANAN[$n]) && isset($olehKode[PADANAN[$n]])) {
-        $pasti[] = [$t, $olehKode[PADANAN[$n]], 'padanan'];
+        $c = $olehKode[PADANAN[$n]];
+        if ($kat === 0 || (int) ($c['category_id'] ?? 0) === $kat) {
+            $pasti[] = [$t, $c, 'padanan'];
+            continue;
+        }
+
+        $ragu[] = [$t, $c, sprintf(
+            'padanan global menunjuk %s (kategori %d) padahal paketnya kategori %d — tolak, putuskan manual',
+            (string) $c['kode'],
+            (int) ($c['category_id'] ?? 0),
+            $kat
+        )];
         continue;
     }
 
-    // 2. nama ternormalkan cocok persis
+    // 3. Nama ternormalkan cocok persis. Bila lebih dari satu pemeriksaan
+    //    bernama sama, kategori paket dipakai untuk memilih — dan bila
+    //    masih lebih dari satu, tidak ada yang dipilih.
     if (isset($olehNama[$n])) {
-        $pasti[] = [$t, $olehNama[$n], 'nama sama'];
+        $kandidat = $olehNama[$n];
+
+        if ($kat !== 0 && count($kandidat) > 1) {
+            $sesuai = array_values(array_filter(
+                $kandidat,
+                static fn($c) => (int) ($c['category_id'] ?? 0) === $kat
+            ));
+            if (count($sesuai) === 1) {
+                $pasti[] = [$t, $sesuai[0], 'nama sama + kategori paket'];
+                continue;
+            }
+            $kandidat = $sesuai !== [] ? $sesuai : $kandidat;
+        }
+
+        if (count($kandidat) === 1) {
+            $c = $kandidat[0];
+            if ($kat === 0 || (int) ($c['category_id'] ?? 0) === $kat) {
+                $pasti[] = [$t, $c, 'nama sama'];
+                continue;
+            }
+            $ragu[] = [$t, $c, sprintf(
+                'nama sama tetapi kategorinya beda (%d vs paket %d)',
+                (int) ($c['category_id'] ?? 0),
+                $kat
+            )];
+            continue;
+        }
+
+        $ragu[] = [$t, $kandidat[0], 'AMBIGU — ' . count($kandidat) . ' pemeriksaan bernama sama: '
+            . implode(', ', array_map(static fn($c) => (string) $c['kode'], $kandidat))];
         continue;
     }
 
-    // 3. kode LIS ditulis apa adanya sebagai nama template
+    // 4. kode LIS ditulis apa adanya sebagai nama template
     if (isset($olehKode[strtoupper($nama)])) {
-        $pasti[] = [$t, $olehKode[strtoupper($nama)], 'kode sama'];
+        $c = $olehKode[strtoupper($nama)];
+        if ($kat === 0 || (int) ($c['category_id'] ?? 0) === $kat) {
+            $pasti[] = [$t, $c, 'kode sama'];
+            continue;
+        }
+        $ragu[] = [$t, $c, sprintf(
+            'kode sama tetapi kategorinya beda (%d vs paket %d)',
+            (int) ($c['category_id'] ?? 0),
+            $kat
+        )];
         continue;
     }
 
     // Tidak pasti — cari calon terdekat, tetapi jangan dipakai sendiri.
+    //
+    // Calon pun disaring kategori bila paketnya dikenali: menawarkan
+    // "Leukosit" darah sebagai calon untuk baris urine hanya mengundang
+    // petugas menyetujui pemetaan yang salah.
+    $dicari = $kat === 0
+        ? $tests
+        : array_values(array_filter($tests, static fn($c) => (int) ($c['category_id'] ?? 0) === $kat));
+    if ($dicari === []) {
+        $dicari = $tests;
+    }
+
     $terbaik = null;
     $skor    = 0;
-    foreach ($tests as $c) {
+    foreach ($dicari as $c) {
         similar_text($n, normal((string) $c['nama']), $persen);
         if ($persen > $skor) {
             $skor    = $persen;

@@ -200,6 +200,28 @@ final class OrderService
             $barcodes         = [];
             $total            = 0.0;
 
+            // TARIF LIS TIDAK DIPAKAI UNTUK ORDER YANG DITARIK DARI KHANZA
+            //
+            // Pada mode tarik, order dibuat dari permintaan yang SUDAH
+            // bertarif di Khanza — biaya_item, bagian_rs, bhp, jasa dokter,
+            // dan seterusnya sudah ditetapkan di sana, dan di sanalah
+            // penagihan pasien dihitung.
+            //
+            // Bila LIS ikut menempelkan harganya sendiri dari master tests,
+            // muncul dua angka untuk satu pemeriksaan yang sama. Keduanya
+            // terlihat sah, tidak ada galat, dan selisihnya baru ketahuan
+            // ketika rekap pendapatan laboratorium tidak cocok dengan kasir.
+            // Menelusurinya berbulan-bulan kemudian nyaris mustahil karena
+            // tidak ada catatan angka mana yang benar.
+            //
+            // Karena itu tarifnya dikosongkan — bukan nol karena terlupa,
+            // melainkan karena tarif itu memang bukan milik LIS. Order yang
+            // dibuat langsung di LIS (pasien datang sendiri, rujukan luar)
+            // tetap memakai tarif master seperti biasa.
+            $dariKhanza = ($data['sumber'] ?? 'manual') === 'khanza';
+            $modeTarik  = Config::setting('khanza.mode_order', 'push') === 'pull';
+            $pakaiTarif = !($dariKhanza && $modeTarik);
+
             foreach ($tests as $test) {
                 $jenis = $test['specimen_type_id'] === null ? 0 : (int) $test['specimen_type_id'];
 
@@ -221,14 +243,16 @@ final class OrderService
                     'order_id'            => $orderId,
                     'test_id'             => (int) $test['id'],
                     'specimen_id'         => $spesimenPerJenis[$jenis],
-                    'harga'               => (float) $test['harga'],
+                    'harga'               => $pakaiTarif ? (float) $test['harga'] : 0.0,
                     'status'              => 'pending',
                     'urut'                => (int) $test['urut'],
                     'khanza_kd_jenis_prw' => $test['khanza_kd_jenis_prw'],
                     'khanza_id_template'  => $test['khanza_id_template'],
                 ]);
 
-                $total += (float) $test['harga'];
+                if ($pakaiTarif) {
+                    $total += (float) $test['harga'];
+                }
             }
 
             Database::update('orders', ['total_harga' => $total], 'id = ?', [$orderId]);

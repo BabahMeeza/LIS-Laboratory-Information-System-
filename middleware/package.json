@@ -16,7 +16,8 @@
     "simulate:astm-query": "node simulator/astmAnalyzer.js --query",
     "verify:worklist": "node simulator/rekamWorklist.js",
     "temukan:alat": "node simulator/temukanAlat.js",
-    "simulate:bc5000": "node simulator/bc5000Palsu.js"
+    "simulate:bc5000": "node simulator/bc5000Palsu.js",
+    "cek": "node bin/cek-koneksi.js"
   },
   "dependencies": {},
   "optionalDependencies": {

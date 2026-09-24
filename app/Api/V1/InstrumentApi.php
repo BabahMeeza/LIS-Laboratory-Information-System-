@@ -29,7 +29,8 @@ final class InstrumentApi extends ApiController
         $rows = Database::select(
             "SELECT id, kode, nama, merk, model, protokol, transport, mode,
                     host, port, serial_port, baud_rate, data_bits, stop_bits,
-                    parity, flow_control, encoding
+                    parity, flow_control, encoding,
+                    COALESCE(bedakan_tipe_nilai, 0) AS bedakan_tipe_nilai
              FROM instruments WHERE aktif = 1 ORDER BY nama"
         );
 
@@ -45,6 +46,10 @@ final class InstrumentApi extends ApiController
                 'transport' => (string) $row['transport'],
                 'mode'      => (string) $row['mode'],
                 'encoding'  => (string) $row['encoding'],
+                // Alat yang memakai satu kode untuk dua arti, dibedakan
+                // hanya lewat OBX-2 (mis. MediGo URO: WBC sedimen vs WBC
+                // carik celup). Lihat middleware/src/protocols/hl7.js.
+                'bedakan_tipe_nilai' => (int) $row['bedakan_tipe_nilai'] === 1,
                 'tcp'       => [
                     'host' => $row['host'],
                     'port' => $row['port'] === null ? null : (int) $row['port'],
@@ -200,19 +205,88 @@ final class InstrumentApi extends ApiController
             return $this->gagal('Sample ID kosong.', 422);
         }
 
+        // ----------------------------------------------------------------
+        // Pencarian bertingkat — JANGAN disatukan menjadi satu OR.
+        //
+        // Satu deret angka yang sama dapat menjadi barcode tabung milik
+        // seorang pasien SEKALIGUS nomor laboratorium milik pasien lain.
+        // Penomoran keduanya berjalan sendiri-sendiri, jadi tabrakan itu
+        // bukan kemungkinan teoretis — pada data uji ini pun terjadi:
+        //
+        //   2609020006  → barcode tabung pada order LIS-260902-0003
+        //   2609020006  → no_lab pada order LIS-260902-0006
+        //
+        // Kueri yang meng-OR ketiganya lalu memilih "ORDER BY o.id DESC
+        // LIMIT 1" akan mengembalikan order yang lebih baru — yaitu
+        // pasien yang SALAH — tanpa satu pun tanda bahwa ada tabrakan.
+        // Alat kemudian menampilkan nama pasien lain untuk tabung itu.
+        //
+        // Karena itu: barcode diperiksa lebih dulu dan sendirian. Barcode
+        // adalah identitas fisik tabung dan bersifat unik; itulah yang
+        // benar-benar ditempel pada spesimen yang sedang dihisap alat.
+        // Nomor lab dan nomor order hanya dipakai sebagai cadangan bila
+        // barcode tidak cocok sama sekali.
+        // ----------------------------------------------------------------
+        $pilih = "SELECT o.id AS order_id, o.no_order, o.no_lab, o.prioritas,
+                         o.dokter_perujuk, o.nama_ruang, o.kode_ruang, o.tgl_order,
+                         o.diagnosa_klinis, o.informasi_tambahan,
+                         p.nama AS nama_pasien, p.no_rm, p.jk, p.tgl_lahir,
+                         s.id AS specimen_id, s.barcode,
+                         s.collected_at, s.received_at,
+                         st.kode AS kode_spesimen, st.nama AS nama_spesimen,
+                         uk.nama AS nama_pengambil, ut.nama AS nama_penerima
+                    FROM specimens s
+                    JOIN orders o   ON o.id = s.order_id
+                    JOIN patients p ON p.id = o.patient_id
+               LEFT JOIN specimen_types st ON st.id = s.specimen_type_id
+               LEFT JOIN users uk ON uk.id = s.collected_by
+               LEFT JOIN users ut ON ut.id = s.received_by
+                   WHERE %s
+                     AND o.status NOT IN ('cancelled','released')";
+
         $konteks = Database::selectOne(
-            "SELECT o.id AS order_id, o.no_order, o.no_lab, o.prioritas,
-                    o.dokter_perujuk, o.nama_ruang, o.tgl_order,
-                    p.nama AS nama_pasien, p.no_rm, p.jk, p.tgl_lahir,
-                    s.id AS specimen_id, s.barcode
-             FROM specimens s
-             JOIN orders o   ON o.id = s.order_id
-             JOIN patients p ON p.id = o.patient_id
-             WHERE (s.barcode = ? OR o.no_lab = ? OR o.no_order = ?)
-               AND o.status NOT IN ('cancelled','released')
-             ORDER BY o.id DESC LIMIT 1",
-            [$sampleId, $sampleId, $sampleId]
+            sprintf($pilih, 's.barcode = ?') . ' LIMIT 1',
+            [$sampleId]
         );
+
+        if ($konteks === null) {
+            // Cadangan: nomor lab / nomor order. Di sini satu nilai dapat
+            // menaungi beberapa tabung, jadi keduaduaan harus diperiksa —
+            // bila menunjuk lebih dari satu ORDER, permintaan ditolak.
+            // Menebak di antara dua pasien jauh lebih berbahaya daripada
+            // menyuruh petugas memindai ulang barcodenya.
+            $calon = Database::select(
+                sprintf($pilih, '(o.no_lab = ? OR o.no_order = ?)')
+                . ' ORDER BY s.id ASC',
+                [$sampleId, $sampleId]
+            );
+
+            $orderUnik = array_unique(array_map(
+                static fn (array $r): int => (int) $r['order_id'],
+                $calon
+            ));
+
+            if (count($orderUnik) > 1) {
+                Logger::warning(
+                    'Permintaan worklist ditolak: Sample ID menunjuk lebih dari satu order.',
+                    [
+                        'sample_id' => $sampleId,
+                        'order'     => array_values($orderUnik),
+                        'instrument'=> $kodeAlat,
+                    ]
+                );
+
+                return $this->gagal(
+                    'Sample ID "' . $sampleId . '" menunjuk lebih dari satu order — '
+                    . 'permintaan tidak dijawab agar tidak tertukar pasien. '
+                    . 'Pindai barcode tabung, bukan nomor laboratorium.',
+                    409,
+                    ['sample_id' => $sampleId, 'tests' => []]
+                );
+            }
+
+            $konteks = $calon[0] ?? null;
+        }
 
         if ($konteks === null) {
             return $this->gagal('Sample ID "' . $sampleId . '" tidak ditemukan.', 404, [
@@ -263,12 +337,34 @@ final class InstrumentApi extends ApiController
                 'birthdate' => $konteks['tgl_lahir'],
             ],
             // Analyzer seperti Mindray BC-5000 menampilkan medan Clinician,
-            // Department, dan Draw Time pada layar entri sampelnya. Data itu
-            // sudah ada di order, jadi ikut dikirim agar operator tidak
-            // mengetik ulang apa yang sudah tercatat di LIS.
+            // Department, Draw Time, dan Delivery Time pada layar entri
+            // sampelnya. Data itu sudah ada di LIS, jadi ikut dikirim agar
+            // operator tidak mengetik ulang apa yang sudah tercatat.
             'clinician'  => (string) ($konteks['dokter_perujuk'] ?? ''),
             'department' => (string) ($konteks['nama_ruang'] ?? ''),
-            'drawn_at'   => $konteks['tgl_order'],
+            'bed'        => '',
+            'diagnosis'  => (string) ($konteks['diagnosa_klinis'] ?? ''),
+            'remark'     => (string) ($konteks['informasi_tambahan'] ?? ''),
+
+            // Waktu pengambilan dan waktu penyerahan spesimen.
+            //
+            // Sebelumnya "drawn_at" diisi dari orders.tgl_order — itu waktu
+            // DOKTER MEMESAN, bukan waktu darah diambil. Keduanya bisa
+            // berselisih berjam-jam pada pasien rawat inap. Alat menampilkan
+            // nilai itu sebagai "Draw Time", jadi mengisinya dengan waktu
+            // order berarti menampilkan angka yang salah dengan percaya diri.
+            //
+            // Sumber yang benar ada pada spesimen: collected_at (diambil)
+            // dan received_at (diserahkan ke lab).
+            'drawn_at'     => $konteks['collected_at'],
+            'delivered_at' => $konteks['received_at'],
+            'collector'    => (string) ($konteks['nama_pengambil'] ?? ''),
+            'deliverer'    => (string) ($konteks['nama_penerima'] ?? ''),
+
+            // Sumber spesimen — dipakai alat pada OBR-15 (BLDV/BLDC).
+            'specimen_code' => (string) ($konteks['kode_spesimen'] ?? ''),
+            'specimen_name' => (string) ($konteks['nama_spesimen'] ?? ''),
+
             'tests'      => array_column($rows, 'kode'),
             'test_info'  => $rows,
         ], count($rows) . ' pemeriksaan menunggu');
