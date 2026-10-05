@@ -23,13 +23,10 @@
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
     # Buang garis miring di akhir agar rute konsisten.
-    # Target diambil dari %{REQUEST_URI} (path URL lengkap, termasuk awalan
-    # sub-folder). Jangan pakai substitusi relatif ($1) bersama flag R:
-    # tanpa RewriteBase, Apache menempelkan path folder di disk sehingga
-    # alamat berubah menjadi http://localhost/Applications/XAMPP/...
+    # Substitusi ditulis relatif ($1, bukan /$1) agar awalan sub-folder
+    # tetap terjaga saat pengalihan.
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} (.+)/$
-    RewriteRule ^ %1 [L,R=301]
+    RewriteRule ^(.+)/$ $1 [L,R=301]
 
     # Berkas dan folder yang benar-benar ada dilayani apa adanya.
     RewriteCond %{REQUEST_FILENAME} -f [OR]
